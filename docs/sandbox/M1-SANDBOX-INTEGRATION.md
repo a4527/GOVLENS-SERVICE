@@ -25,6 +25,11 @@ Supply these non-secret parameters:
 | `DeploymentApprovalEnvironment` | `customer-sandbox-deploy` unless the customer chose a different protected Environment. |
 | `ExistingGitHubOidcProviderArn` | Leave empty only when the account has no GitHub OIDC provider; otherwise use the existing provider ARN. |
 
+Apply stack-level tags `Owner=<owner>`, `Project=<ProjectName>`, and
+`Layer=bootstrap` when creating the stack (Console: Tags step; CLI:
+`--tags Owner=<owner> Project=<ProjectName> Layer=bootstrap`). CloudFormation
+propagates them to the bootstrap resources ([DEC-0030](../DECISIONS.md#dec-0030)).
+
 The bootstrap outputs `GitHubActionsDeploymentRoleArn`,
 `FoundationExecutionRoleArn`, and `LambdaCodeBucketName`. Keep these values in
 the customer deployment record.
@@ -38,7 +43,7 @@ compares the two in CI; when it changes the bootstrap, the customer
 administrator re-applies the bootstrap stack **before** dispatching the
 foundation deployment (Console: CloudFormation → the bootstrap stack → Update →
 Replace current template; or `aws cloudformation deploy` with
-`--capabilities CAPABILITY_NAMED_IAM` and the same parameters). The account
+`--capabilities CAPABILITY_NAMED_IAM`, the same parameters, and the same `--tags`). The account
 that already has the Lambda code bucket and OIDC provider uses the
 `m1-customer-bootstrap-roles.yaml` variant. It does not create the workload repository,
 GitHub App token, customer read role, or application secrets.
@@ -49,6 +54,9 @@ In the current repository, create the two GitHub Environments specified in the
 bootstrap. Both require reviewers and define the same non-secret
 `EXPECTED_AWS_ACCOUNT_ID` Environment variable. The bootstrap trust allows only
 these two Environment OIDC subjects to assume the deployment role.
+The deployment Environment also defines `OWNER_TAG`, the non-secret value of the
+`Owner` stack tag. The workflow tags the foundation stack with `Owner`,
+`Project=<ProjectName>`, and `Layer=foundation` and rejects an empty value.
 
 The second, artifact-deployment GitHub Environment also defines the non-secret
 `M1_ASSESSMENT_MODE` variable. Set it explicitly to `live` for this runbook or

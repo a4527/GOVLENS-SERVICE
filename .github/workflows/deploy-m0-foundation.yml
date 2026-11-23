@@ -285,6 +285,8 @@ jobs:
       FRONTEND_DEPLOYMENT_ENVIRONMENT: ${{ inputs.artifact_approval_environment }}
       OIDC_SUBJECT_PREFIX: ${{ vars.OIDC_SUBJECT_PREFIX }}
       EXPECTED_AWS_ACCOUNT_ID: ${{ vars.EXPECTED_AWS_ACCOUNT_ID }}
+      # 공통 리소스 태그(DEC-0030). Owner 값은 공개 저장소에 두지 않고 Environment 변수로 받는다.
+      OWNER_TAG: ${{ vars.OWNER_TAG }}
     steps:
       - name: Check out approved repository revision
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
@@ -299,6 +301,7 @@ jobs:
           test -n "${LAMBDA_CODE_S3_OBJECT_VERSION}"
           [[ "${LAMBDA_ZIP_SHA256}" =~ ^[0-9a-f]{64}$ ]]
           [[ "${OIDC_SUBJECT_PREFIX}" =~ ^repo:[^:]+$ ]]
+          [[ "${OWNER_TAG}" =~ ^[A-Za-z0-9._@+-]{1,128}$ ]]
           test -n "${LANGGRAPH_LAYER_S3_KEY}"
           test -n "${LANGGRAPH_LAYER_S3_OBJECT_VERSION}"
           # 배포 대상과 그 token은 함께 있거나 함께 없어야 한다. 템플릿 Rule도 같은 것을
@@ -386,6 +389,10 @@ jobs:
               "FrontendDistributionId=${FRONTEND_DISTRIBUTION_ID}" \
               "FrontendDeploymentEnvironment=${FRONTEND_DEPLOYMENT_ENVIRONMENT}" \
               "GitHubOidcSubjectPrefix=${OIDC_SUBJECT_PREFIX}" \
+            --tags \
+              "Owner=${OWNER_TAG}" \
+              "Project=${PROJECT_NAME}" \
+              "Layer=foundation" \
             --no-fail-on-empty-changeset
 
       - name: Diagnose failed CloudFormation deployment

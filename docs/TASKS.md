@@ -36,7 +36,7 @@
 | V-07 | P2 | TODO | M4 Golden release gate 실측. Post-Deploy 18 Case × 5 run observation bundle로 `scripts/evaluate_m4_golden_release_gate.py` sanitized report를 만든다 ([M4-GOLDEN-RELEASE-GATE](evaluations/M4-GOLDEN-RELEASE-GATE.md)). V-05 이후 |
 | V-08 | P2 | TODO | Frontend 테스트. `apps/frontend`에 test 스크립트가 없다. 최소 smoke test를 추가하고 `frontend-checks.yml`에서 실행한다 |
 | V-09 | P1 | TODO | 정책 원문 확보. `policies-local/`에 ISMS-P 인증기준(2023-10-31, KISA 공개본)을 두고 `build_isms_p_baseline.py --check`가 통과한다. 사내 체크리스트는 옛 원문을 구해 digest가 맞는지 확인하거나, 새로 작성해 새 version으로 등록하고 16개 Rule의 `source_references`를 갱신한다 |
-| V-10 | P1 | TODO | 공통 태그. CloudFormation 스택(`--tags`)과 customer-demo `default_tags`가 `Owner`·`Project`·`Layer`를 붙이고, `Owner` 값은 파라미터·GitHub Variable로 받는다(저장소에 값 없음). Tag Editor에서 계층별 조회가 된다 ([DEC-0030](DECISIONS.md#dec-0030)) |
+| V-10 | P1 | IN PROGRESS | 공통 태그. CloudFormation 스택(`--tags`)과 customer-demo `default_tags`가 `Owner`·`Project`·`Layer`를 붙이고, `Owner` 값은 파라미터·GitHub Variable로 받는다(저장소에 값 없음). Tag Editor에서 계층별 조회가 된다 ([DEC-0030](DECISIONS.md#dec-0030)). 2026-11-23 코드 반영(Foundation 워크플로 `--tags`, bootstrap 역할 태그 권한, customer-demo·템플릿 `default_tags`), 라이브 확인은 V-03 배포 때 |
 | V-11 | P1 | TODO | 재실행 가능한 bootstrap. 빈 계정에서 `m1-customer-bootstrap` → Foundation 배포 → 고객 onboarding(state 버킷·lock 테이블·Plan/Apply/read Role) 순서를 스크립트 하나로 실행하고, 이미 있으면 건너뛴다. 고객 onboarding은 지금 수동 체크리스트이므로 CloudFormation 템플릿으로 만들어 실제 고객 온보딩 키트로도 쓴다. V-10 이후 |
 | V-12 | P1 | TODO | customer workload 일일 teardown. customer-demo를 `terraform destroy`로 지워도 state·Foundation·onboarding은 남고, 다음 apply가 같은 비준수 기준선(태그 또는 브랜치로 고정)에서 시작한다. 조치 PR merge 뒤 기준선 복원 절차가 문서화된다 |
 

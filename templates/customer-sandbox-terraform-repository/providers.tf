@@ -6,6 +6,9 @@ provider "aws" {
       ManagedBy   = "Terraform"
       Environment = "sandbox"
       Purpose     = "platform-onboarding"
+      Owner       = var.owner_tag
+      Project     = var.project_tag
+      Layer       = "customer-workload"
     }
   }
 }
