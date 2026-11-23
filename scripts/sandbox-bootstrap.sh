@@ -7,6 +7,12 @@
 #   customer    customer-demo workload policy + customer-onboarding stack
 #               (state backend, Plan/Apply OIDC roles, cross-account read role, External ID)
 #   status      prints the stack outputs needed for GitHub Environments and Secrets
+#   recover-foundation
+#               sandbox only: deletes a broken foundation stack and the retained, fixed-name
+#               resources it leaves behind (metadata table, artifact/audit buckets, CloudTrail
+#               trail, Cognito user pool) so the foundation phase can create them again.
+#               DESTROYS sandbox data: assessment history, artifacts, audit logs, users.
+#               A customer environment recovers by CloudFormation import instead.
 #
 # Every stack gets the common tags Owner/Project/Layer. Values that identify the account or
 # owner come from the environment, never from this public repository.
@@ -22,8 +28,9 @@
 #   CUSTOMER_DEMO_DIR (../customer-demo relative to the repository root),
 #   ARTIFACT_ENVIRONMENT (customer-sandbox-artifact), DEPLOY_ENVIRONMENT (customer-sandbox-deploy)
 #
-# Usage: scripts/sandbox-bootstrap.sh <platform|foundation|customer|status> [--yes]
+# Usage: scripts/sandbox-bootstrap.sh <platform|foundation|customer|status|recover-foundation> [--yes]
 #   Without --yes each stack change is shown as a change set preview and needs confirmation.
+#   recover-foundation always asks for the typed resource prefix, even with --yes.
 set -euo pipefail
 
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
@@ -189,15 +196,114 @@ phase_status() {
   done
 }
 
+# Deletes every object version and delete marker, then the bucket.
+empty_and_delete_bucket() {
+  local bucket=$1 page
+  while :; do
+    page=$(aws s3api list-object-versions --bucket "${bucket}" --max-items 1000 \
+      --expected-bucket-owner "${EXPECTED_AWS_ACCOUNT_ID}" --output json |
+      jq -c '{Objects: ([(.Versions // [])[], (.DeleteMarkers // [])[]]
+        | map({Key, VersionId})), Quiet: true}')
+    [[ $(jq '.Objects | length' <<<"${page}") -eq 0 ]] && break
+    aws s3api delete-objects --bucket "${bucket}" --delete "${page}" \
+      --expected-bucket-owner "${EXPECTED_AWS_ACCOUNT_ID}" >/dev/null
+  done
+  aws s3api delete-bucket --bucket "${bucket}" --expected-bucket-owner "${EXPECTED_AWS_ACCOUNT_ID}"
+}
+
+phase_recover_foundation() {
+  [[ "${PLATFORM_ENVIRONMENT}" == sandbox ]] ||
+    die "recover-foundation runs only for PLATFORM_ENVIRONMENT=sandbox; recover customers by import"
+
+  # Names are fixed by m0-foundation.yaml (ProjectName-Environment-<component>).
+  local table="${PREFIX}-metadata"
+  local artifact_bucket="${PREFIX}-artifacts-${EXPECTED_AWS_ACCOUNT_ID}"
+  local audit_bucket="${PREFIX}-audit-${EXPECTED_AWS_ACCOUNT_ID}"
+  local trail="${PREFIX}-artifact-access"
+  local pool_name="${PREFIX}-users"
+
+  local stack_status="(none)"
+  if stack_exists "${FOUNDATION_STACK}"; then
+    stack_status=$(aws cloudformation describe-stacks --stack-name "${FOUNDATION_STACK}" \
+      --query 'Stacks[0].StackStatus' --output text)
+  fi
+
+  local -a found=()
+  aws dynamodb describe-table --table-name "${table}" >/dev/null 2>&1 && found+=("table ${table}")
+  local bucket
+  for bucket in "${artifact_bucket}" "${audit_bucket}"; do
+    aws s3api head-bucket --bucket "${bucket}" --expected-bucket-owner "${EXPECTED_AWS_ACCOUNT_ID}" \
+      >/dev/null 2>&1 && found+=("bucket ${bucket}")
+  done
+  aws cloudtrail get-trail --name "${trail}" >/dev/null 2>&1 && found+=("trail ${trail}")
+  local pool_ids
+  pool_ids=$(aws cognito-idp list-user-pools --max-results 60 --output json |
+    jq -r --arg name "${pool_name}" '.UserPools[] | select(.Name == $name) | .Id')
+  local pool
+  for pool in ${pool_ids}; do found+=("user-pool ${pool} (${pool_name})"); done
+
+  echo "Foundation stack ${FOUNDATION_STACK}: ${stack_status}"
+  if ((${#found[@]} == 0)); then
+    echo "No retained foundation resources found."
+  else
+    echo "Retained foundation resources that will be DELETED with all their data:"
+    printf '  - %s\n' "${found[@]}"
+  fi
+  [[ "${stack_status}" == "(none)" && ${#found[@]} -eq 0 ]] && return 0
+  # A complete stack that still owns all five retained resources is healthy: recovery would
+  # only destroy data. Externally deleted resources make the count lower.
+  if [[ "${stack_status}" =~ ^(CREATE|UPDATE)_COMPLETE$ && ${#found[@]} -eq 5 &&
+    "${FORCE_RECOVER:-}" != 1 ]]; then
+    die "the foundation looks healthy; set FORCE_RECOVER=1 to delete and recreate it anyway"
+  fi
+
+  read -r -p "Type ${PREFIX} to delete the stack and the resources above: " answer
+  [[ "${answer}" == "${PREFIX}" ]] || die "aborted by user"
+
+  if [[ "${stack_status}" != "(none)" ]]; then
+    # Retained resources survive this; the loop below removes them.
+    aws cloudformation delete-stack --stack-name "${FOUNDATION_STACK}"
+    aws cloudformation wait stack-delete-complete --stack-name "${FOUNDATION_STACK}"
+  fi
+  local item
+  for item in "${found[@]}"; do
+    case "${item}" in
+      "trail "*) aws cloudtrail delete-trail --name "${trail}" ;;
+    esac
+  done
+  for item in "${found[@]}"; do
+    case "${item}" in
+      "bucket "*) empty_and_delete_bucket "${item#bucket }" ;;
+      "table "*)
+        aws dynamodb update-table --table-name "${table}" --no-deletion-protection-enabled >/dev/null
+        aws dynamodb delete-table --table-name "${table}" >/dev/null
+        aws dynamodb wait table-not-exists --table-name "${table}"
+        ;;
+      "user-pool "*)
+        pool=${item#user-pool }
+        pool=${pool%% *}
+        local domain
+        domain=$(aws cognito-idp describe-user-pool --user-pool-id "${pool}" \
+          --query 'UserPool.Domain' --output text)
+        if [[ -n "${domain}" && "${domain}" != None ]]; then
+          aws cognito-idp delete-user-pool-domain --user-pool-id "${pool}" --domain "${domain}"
+        fi
+        aws cognito-idp delete-user-pool --user-pool-id "${pool}"
+        ;;
+    esac
+  done
+  echo "Recovered. Run the foundation phase to deploy it again, then re-create the admin user."
+}
+
 main() {
   local phase=${1:-}
   [[ "${2:-}" == --yes ]] && ASSUME_YES=true
   case "${phase}" in
-    platform | foundation | customer | status) ;;
-    *) sed -n '2,26p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 2 ;;
+    platform | foundation | customer | status | recover-foundation) ;;
+    *) sed -n '2,33p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 2 ;;
   esac
   check_account
-  "phase_${phase}"
+  "phase_${phase//-/_}"
 }
 
 main "$@"

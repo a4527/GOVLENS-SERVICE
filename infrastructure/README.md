@@ -38,6 +38,14 @@ locally), `customer` (workload policy + onboarding), and `status`. Each step pre
 and asks before executing, tags every stack with `Owner`/`Project`/`Layer`, and takes account and
 owner values from the environment.
 
+If the account was cleaned and the foundation stack is gone or broken, its fixed-name retained
+resources (metadata table, artifact and audit buckets, CloudTrail trail, Cognito user pool) block a
+new deploy. `scripts/sandbox-bootstrap.sh recover-foundation` lists them and, after the typed
+resource prefix, deletes the stack and those resources with all their data. It runs only for
+`PLATFORM_ENVIRONMENT=sandbox` and refuses a healthy stack unless `FORCE_RECOVER=1`. A customer
+environment must not use it: recover there by CloudFormation resource import so audit logs and
+assessment history survive.
+
 ## M0 foundation contract
 
 The first stack accepts `ProjectName` and `Environment`; it normally derives physical names as

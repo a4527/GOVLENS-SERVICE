@@ -58,7 +58,7 @@
 ### DEC-0030 · 개인 sandbox는 단일 AWS 계정, Foundation 유지·고객 workload는 매일 삭제
 
 - 결정일: 2026-11-23 · 상태: Accepted
-- 결정·이유: 비용 때문에 플랫폼(bootstrap·Foundation)과 고객 쪽(onboarding·workload)을 개인 AWS 계정 하나에 둔다(팀 기간 sandbox와 같은 구성, 이전 팀 계정은 쓰지 않는다). Foundation은 유휴 비용이 거의 없고 이름 고정 `Retain` 리소스(DynamoDB·S3·Cognito·CloudTrail) 때문에 재생성이 실패하므로 유지하고, 비용이 드는 customer-demo workload(EC2·RDS·ALB)만 작업일마다 `terraform apply`/`destroy`한다. 계정 정리 가능성에 대비해 고객 배포 경로(`m1-customer-bootstrap` → Foundation → 고객 onboarding)를 그대로 재실행하는 bootstrap을 두고, 모든 리소스에 공통 태그 `Owner`·`Project`·`Layer`(`bootstrap`|`foundation`|`customer-onboarding`|`customer-workload`)를 붙인다. 계정 ID·`Owner` 값은 공개 저장소에 두지 않고 배포 파라미터·GitHub Variable로 주입한다.
+- 결정·이유: 비용 때문에 플랫폼(bootstrap·Foundation)과 고객 쪽(onboarding·workload)을 개인 AWS 계정 하나에 둔다(팀 기간 sandbox와 같은 구성, 이전 팀 계정은 쓰지 않는다). Foundation은 유휴 비용이 거의 없고 이름 고정 `Retain` 리소스(DynamoDB·S3·Cognito·CloudTrail) 때문에 재생성이 실패하므로 유지하고, 비용이 드는 customer-demo workload(EC2·RDS·ALB)만 작업일마다 `terraform apply`/`destroy`한다. 계정 정리 가능성에 대비해 고객 배포 경로(`m1-customer-bootstrap` → Foundation → 고객 onboarding)를 그대로 재실행하는 bootstrap을 두고, 모든 리소스에 공통 태그 `Owner`·`Project`·`Layer`(`bootstrap`|`foundation`|`customer-onboarding`|`customer-workload`)를 붙인다. 계정 ID·`Owner` 값은 공개 저장소에 두지 않고 배포 파라미터·GitHub Variable로 주입한다. 계정 정리로 Foundation의 Retain 리소스가 남으면 sandbox에서는 확인 후 삭제하고 재배포한다(데이터 손실 수용, 고객 환경은 CloudFormation import로 복구).
 
 ## 기록·변경 규칙
 
