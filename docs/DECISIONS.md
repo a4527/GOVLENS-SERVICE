@@ -12,7 +12,7 @@
 | `DEC-0002` | AI evaluation boundary | Accepted | [ADR-0002](adr/ADR-0002-ai-evaluation-boundary.md) | — |
 | `DEC-0003` | Continuous scoring with reliability-triggered anchors | Superseded | [ADR-0003](adr/ADR-0003-scoring-reliability.md) | 연속 점수·Anchor 전환 → DEC-0024 (2026-09-05) |
 | `DEC-0004` | Policy knowledge architecture without RAG | Accepted | [ADR-0004](adr/ADR-0004-policy-knowledge-architecture.md) | — |
-| `DEC-0005` | Serverless workflow execution | Accepted | [ADR-0005](adr/ADR-0005-serverless-workflow-execution.md) | — |
+| `DEC-0005` | Serverless workflow execution | Partially Superseded | [ADR-0005](adr/ADR-0005-serverless-workflow-execution.md) | Worker의 LangGraph subgraph 부분 → DEC-0029 |
 | `DEC-0006` | Persistence and artifact storage boundary | Accepted | [ADR-0006](adr/ADR-0006-persistence-and-artifact-storage.md) | — |
 | `DEC-0007` | Approved deployment boundary | Accepted | [ADR-0007](adr/ADR-0007-approved-deployment-boundary.md) | — |
 | `DEC-0008` | Customer deployment topology | Accepted | [ADR-0008](adr/ADR-0008-customer-deployment-topology.md) | — |
@@ -47,6 +47,12 @@
 
 - 결정일: 2026-11-23 · 상태: Accepted · 대체: DEC-0001(ADR-0001)의 브랜치·진행 관리 부분
 - 결정·이유: 혼자 운영하므로 `dev` 통합 브랜치와 Owner 승인·`.ai/` 규칙을 없애고, `type/kebab-case` 작업 브랜치에서 `main`으로 PR을 열어 CI 통과 후 병합한다. 진행 관리는 `docs/TASKS.md`·`docs/PROGRESS.md`로 옮긴다. Monorepo + 별도 Customer IaC Repository 구조는 유지한다.
+
+<a id="dec-0029"></a>
+### DEC-0029 · Worker는 LangGraph 없이 일반 Python으로 유지한다
+
+- 결정일: 2026-11-23 · 상태: Accepted · 대체: DEC-0005(ADR-0005)의 "Worker = LangGraph subgraph" 부분 · 검토: [제안서](proposals/LANGGRAPH-REMEDIATION-WORKER.md)
+- 결정·이유: LangGraph는 자연어 진입점인 Parent Orchestrator에만 쓴다. Assessment·Remediation·Deployment Worker는 SQS + DynamoDB checkpoint의 일반 Python(ADR-0013)으로 둔다. Remediation의 생성·검증·재요청 반복은 이미 코드에 있고 검증 단계를 늘릴 계획이 없어, 옮겨도 동작 이득 없이 의존성·Layer 크기만 늘기 때문이다.
 
 ## 기록·변경 규칙
 

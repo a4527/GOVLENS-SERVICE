@@ -44,10 +44,10 @@ Policy / ISMS-P + Customer IaC + AWS Actual
 React SPA (S3 + CloudFront)
   → Cognito (JWT)
   → API Gateway
-      ├─ Parent Router Lambda      (자연어 라우팅 + Policy Q&A, 동기 max 30s)
-      ├─ Assessment API  → SQS → Assessment Worker   (LangGraph subgraph)
-      ├─ Remediation API → SQS → Remediation Worker  (LangGraph subgraph)
-      └─ Deployment API  → SQS → Deployment Worker    (LangGraph subgraph)
+      ├─ Parent Router Lambda      (LangGraph: 자연어 라우팅 + Policy Q&A, 동기 max 30s)
+      ├─ Assessment API  → SQS → Assessment Worker   (Python, DynamoDB checkpoint)
+      ├─ Remediation API → SQS → Remediation Worker  (Python, DynamoDB checkpoint)
+      └─ Deployment API  → SQS → Deployment Worker    (Python, DynamoDB checkpoint)
 
 AI / Tools : Bedrock 역할별 Model Profile, Policy Context, AWS Resource Tool(RO), GitHub App
 State      : DynamoDB (Job / checkpoint / metadata)
@@ -97,7 +97,7 @@ GOVLENS-SERVICE/
 ├── apps/
 │   ├── backend/        # 기능별 Lambda (auth, jobs, assessment, policy, remediation, deployment)
 │   └── frontend/       # React SPA 콘솔
-├── agent/              # LangGraph Parent Orchestrator / subgraph
+├── agent/              # LangGraph Parent Orchestrator, Resource/GitHub Tool
 ├── packages/           # 공용 Contract, 도메인 스키마
 ├── infrastructure/     # CloudFormation, IAM, 파라미터
 ├── ci/                 # Terraform plan/apply template

@@ -19,6 +19,7 @@
 ## 합의와 미정 범위
 
 - 브랜치·진행 관리 방식: [DEC-0028](DECISIONS.md#dec-0028).
+- Worker 실행 방식: LangGraph는 Parent에만, Worker는 일반 Python([DEC-0029](DECISIONS.md#dec-0029)).
 - 제품 범위·평가 의미는 [PRD](PRD.md), 구조는 [DESIGN](DESIGN.md), 결정은 [DECISIONS](DECISIONS.md)를 따른다.
 - IaC 관점 INITIAL 판정은 HCL parser 계층이 생길 때까지 모델이 판단한다(F-02).
 

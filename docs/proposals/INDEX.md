@@ -4,4 +4,4 @@
 
 | 자료 | 채택된 부분과 현재 기준 | 남은 제안·확인 범위 |
 | --- | --- | --- |
-| [LANGGRAPH-REMEDIATION-WORKER.md](LANGGRAPH-REMEDIATION-WORKER.md) | 미채택. 현행은 ADR-0013(일반 Python Worker + DynamoDB checkpoint) | Remediation Worker의 LangGraph 전환 여부 (TASKS F-07) |
+| [LANGGRAPH-REMEDIATION-WORKER.md](LANGGRAPH-REMEDIATION-WORKER.md) | 채택하지 않음 → [DEC-0029](../DECISIONS.md#dec-0029). 현행은 ADR-0013(일반 Python Worker + DynamoDB checkpoint) | 없음. 검증 단계를 늘릴 계획이 생기면 다시 검토 |

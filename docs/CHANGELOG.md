@@ -4,6 +4,7 @@
 
 ## 2026-11-23
 
+- Worker는 LangGraph 없이 일반 Python으로 유지하기로 하고 아키텍처 문서를 구현에 맞췄다([DEC-0029](DECISIONS.md#dec-0029)). LangGraph는 자연어 진입점에만 쓴다.
 - 문서 구조와 비밀값 검사 훅을 초기화했다.
 - 개인 프로젝트로 전환했다. `dev` 브랜치를 없애고 작업 브랜치 → `main` PR로 CI 규칙을 바꿨다([DEC-0028](DECISIONS.md#dec-0028)).
 - 상세 설계는 `docs/design/`, sandbox·데모 런북은 `docs/sandbox/`·`docs/demo/`로 묶었다.

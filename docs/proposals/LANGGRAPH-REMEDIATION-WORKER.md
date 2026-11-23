@@ -1,6 +1,6 @@
 # 제안: Remediation Worker를 LangGraph 그래프로 옮긴다
 
-- 상태: 미승인 제안 (2026-11-23) · 관련: [ADR-0005](../adr/ADR-0005-serverless-workflow-execution.md), [ADR-0013](../adr/ADR-0013-sqs-resumable-worker-execution.md), TASKS F-07
+- 상태: 채택하지 않음 (2026-11-23, [DEC-0029](../DECISIONS.md#dec-0029)) · 관련: [ADR-0005](../adr/ADR-0005-serverless-workflow-execution.md), [ADR-0013](../adr/ADR-0013-sqs-resumable-worker-execution.md), TASKS F-07
 
 ## 배경
 

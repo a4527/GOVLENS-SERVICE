@@ -24,7 +24,7 @@ Natural-language request
 Explicit Assessment / Remediation / Deployment request
 → corresponding API Lambda (JWT/scope validation, Job + WorkflowTask creation)
 → corresponding SQS Standard Queue + DLQ
-→ corresponding Worker Lambda (one LangGraph subgraph)
+→ corresponding Worker Lambda (plain Python, resumable via DynamoDB checkpoint)
 → Bedrock role-specific Model Profile + constrained tools
 
 DynamoDB: Job, revision-bound checkpoint, domain metadata
@@ -35,7 +35,7 @@ GitHub Actions completion event → EventBridge → Deployment Queue → Deploym
 ```
 
 Parent Router는 Queue를 소비하거나 장시간 실행을 이어가지 않는다. 역할별 Worker는 Assessment,
-Remediation, Deployment 중 자신의 subgraph만 실행한다. SQS는 전달 수단이며 상태 정본은 DynamoDB와
+Remediation, Deployment 중 자기 작업만 실행한다. SQS는 전달 수단이며 상태 정본은 DynamoDB와
 S3이다. 플랫폼은 고객 AWS Account의 `us-east-1`에 배포하며, MVP에서 Backend Lambda와 Worker는
 고객 기존 VPC에 연결하지 않는다.
 
@@ -59,11 +59,12 @@ Customer Workload (EC2 / RDS / ALB / S3)
 
 - Frontend: React SPA. UI는 권한별 노출만 제어하고 Authorization은 Backend가 강제한다.
 - Backend: Auth/User, Job/Assessment, Policy/Rule, GitHub/Remediation, Approval/Deployment Lambda로 분리한다.
-- Workflow: LangGraph Parent는 자연어 Orchestration과 Policy Q&A를 맡고, 아래에
-  `ASSESSMENT`, `REMEDIATION`, `DEPLOYMENT` subgraph를 둔다. C가 Assessment/Remediation Agent와
-  Worker orchestration을 소유하고, D는 injected GitHub/Terraform 실행 port와 Deployment Worker를
-  소유한다. 명시적 UI/API 요청은 대응 Subgraph로 직접 진입하고, 자연어 요청만 Parent
-  Orchestrator Agent를 거쳐 의도·후보 scope에 맞는 Subgraph로 라우팅한다.
+- Workflow: LangGraph Parent(`agent/graphs/parent_graph.py`)는 자연어 Orchestration과 Policy Q&A만
+  맡는다. `ASSESSMENT`, `REMEDIATION`, `DEPLOYMENT` Worker는 LangGraph 없이 일반 Python으로
+  SQS·DynamoDB checkpoint 위에서 실행한다([DEC-0029](DECISIONS.md#dec-0029), ADR-0013). C가
+  Assessment/Remediation Agent와 Worker orchestration을 소유하고, D는 injected GitHub/Terraform 실행
+  port와 Deployment Worker를 소유한다. 명시적 UI/API 요청은 대응 Workflow로 직접 진입하고, 자연어
+  요청만 Parent Orchestrator Agent를 거쳐 의도·후보 scope에 맞는 Workflow를 제안한다.
 - Storage: DynamoDB에는 상태와 메타데이터, S3에는 대형 Artifact를 저장한다.
 - Policy ingestion: 고객 정책 원본은 immutable S3 Artifact로 보존하고 비동기 검증·형식별 Parser가
   공통 Policy Document로 정규화한다. 원본 업로드만으로 Assessment에 활성화하지 않으며, 사람이

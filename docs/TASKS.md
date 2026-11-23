@@ -9,6 +9,7 @@
 | ID | 우선순위 | 상태 | 작업 / 완료 기준 |
 | --- | --- | --- | --- |
 | D-01 | P0 | DONE | 개인 프로젝트 전환 결정 기록. [DEC-0028](DECISIONS.md#dec-0028) Accepted, ADR-0001 대체 범위 표시 |
+| D-02 | P2 | DONE | Worker LangGraph 미도입 결정 기록. [DEC-0029](DECISIONS.md#dec-0029) Accepted, ADR-0005 대체 범위 표시 |
 
 ## 기능 구현
 
@@ -20,7 +21,7 @@
 | F-04 | P2 | TODO | Frontend 관측·비용 화면. `GET /deployments/{id}/observability`를 조회해 표시한다 ([API](design/API.md)) |
 | F-05 | P2 | TODO | IAM 리소스 평가 추가. ISMS-P 2.5(인증·권한) 기술 통제를 Rule로 만들고 read Role·Resource Tool·Golden Case를 갖춘다. F-01·V-05 이후 |
 | F-06 | P3 | TODO | CloudTrail 리소스 평가 추가. ISMS-P 2.9.4(로그·접속기록) 기술 통제를 계정 단위로 평가한다. F-05 이후 |
-| F-07 | P2 | TODO | Remediation Worker의 LangGraph 전환 여부 결정. [제안서](proposals/LANGGRAPH-REMEDIATION-WORKER.md)를 검토해 채택하면 ADR을 쓰고 ADR-0005 문구와의 관계를 정리한다. 채택하지 않으면 README·DESIGN·ADR-0005의 "Worker = LangGraph subgraph" 설명을 구현에 맞춘다 |
+| F-07 | P2 | DONE | Remediation Worker의 LangGraph 전환 여부 결정. 채택하지 않음([DEC-0029](DECISIONS.md#dec-0029)). README·DESIGN·C4·ADR-0005의 "Worker = LangGraph subgraph" 설명을 구현에 맞췄다 |
 
 ## 검증과 운영
 
