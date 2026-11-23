@@ -29,7 +29,7 @@ template이다. Platform(GitHub App)은 이 파일을 만들거나 수정하지 
   `TF_STATE_BUCKET`, `TF_STATE_KEY`, `TF_LOCK_TABLE`을, `customer-terraform-apply`에는
   `AWS_REGION`, `TF_APPLY_ROLE_ARN`, `TF_STATE_BUCKET`, `TF_STATE_KEY`, `TF_LOCK_TABLE`을
   GitHub Environment variables로 설정한다. 두 Environment에는 Terraform input인
-  `SANDBOX_BUCKET_NAME`도 같은 값으로 설정한다. state 설정과 bucket 이름은 workflow input이나
+  `SANDBOX_BUCKET_NAME`과 공통 `Owner` 태그 값인 `OWNER_TAG`도 같은 값으로 설정한다. state 설정과 bucket 이름은 workflow input이나
   repository file에 넣지 않으며, 두 Environment의 backend 값은 완전히 같아야 한다.
 
 ## 경계 규약
