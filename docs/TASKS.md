@@ -18,6 +18,9 @@
 | F-02 | P2 | TODO | IAC INITIAL 좌표의 결정적 판정. HCL parser/projection 계층을 두고 Catalog 술어로 판정해 모델 호출을 줄인다. 판정 출처(`decided_by: CODE`)가 결과에 남는다 ([ADR-0024](adr/ADR-0024-scoring-boundary-by-meaning.md)) |
 | F-03 | P2 | TODO | Frontend Admin 감사 이력 화면. `GET /audit-events`를 조회해 표시한다 ([API](design/API.md)) |
 | F-04 | P2 | TODO | Frontend 관측·비용 화면. `GET /deployments/{id}/observability`를 조회해 표시한다 ([API](design/API.md)) |
+| F-05 | P2 | TODO | IAM 리소스 평가 추가. ISMS-P 2.5(인증·권한) 기술 통제를 Rule로 만들고 read Role·Resource Tool·Golden Case를 갖춘다. F-01·V-05 이후 |
+| F-06 | P3 | TODO | CloudTrail 리소스 평가 추가. ISMS-P 2.9.4(로그·접속기록) 기술 통제를 계정 단위로 평가한다. F-05 이후 |
+| F-07 | P2 | TODO | Remediation Worker의 LangGraph 전환 여부 결정. [제안서](proposals/LANGGRAPH-REMEDIATION-WORKER.md)를 검토해 채택하면 ADR을 쓰고 ADR-0005 문구와의 관계를 정리한다. 채택하지 않으면 README·DESIGN·ADR-0005의 "Worker = LangGraph subgraph" 설명을 구현에 맞춘다 |
 
 ## 검증과 운영
 
@@ -31,8 +34,23 @@
 | V-06 | P1 | TODO | 점수 경계 라이브 회귀 측정. `evaluations/data/score-boundary-20260905.md` §3 절차를 자격 증명 환경에서 실행하고 CODE/MODEL 판정별 정확도·일치율을 기록한다 |
 | V-07 | P2 | TODO | M4 Golden release gate 실측. Post-Deploy 18 Case × 5 run observation bundle로 `scripts/evaluate_m4_golden_release_gate.py` sanitized report를 만든다 ([M4-GOLDEN-RELEASE-GATE](evaluations/M4-GOLDEN-RELEASE-GATE.md)). V-05 이후 |
 | V-08 | P2 | TODO | Frontend 테스트. `apps/frontend`에 test 스크립트가 없다. 최소 smoke test를 추가하고 `frontend-checks.yml`에서 실행한다 |
+| V-09 | P1 | TODO | 정책 원문 확보. `policies-local/`에 ISMS-P 인증기준(2023-10-31, KISA 공개본)을 두고 `build_isms_p_baseline.py --check`가 통과한다. 사내 체크리스트는 옛 원문을 구해 digest가 맞는지 확인하거나, 새로 작성해 새 version으로 등록하고 16개 Rule의 `source_references`를 갱신한다 |
+
+## 관측
+
+[DESIGN Observability](DESIGN.md#observability)에 적힌 관측 중 현재 구현은 Artifact 버킷 CloudTrail과 정책 추출 DLQ 알람 1개뿐이다(2026-11-23 확인).
+
+| ID | 우선순위 | 상태 | 작업 / 완료 기준 |
+| --- | --- | --- | --- |
+| O-01 | P1 | TODO | 구조화 로그와 상관 키. API·Worker Lambda 로그가 JSON이고 `request_id`·`job_id`·`assessment_id`·`rule_id`를 담는다. Prompt·정책 원문·IaC 전체는 로그에 남지 않는다(테스트로 고정). Lambda LogGroup을 CloudFormation으로 만들고 보관 기간을 명시한다 |
+| O-02 | P1 | TODO | 핵심 알람. Assessment·Remediation·Deployment DLQ depth, Queue 최고 대기 시간, Worker Lambda 오류·throttle 알람이 있고 SNS로 알린다([ADR-0013](adr/ADR-0013-sqs-resumable-worker-execution.md) Consequences). `cfn-lint`·보안 테스트 통과 |
+| O-03 | P2 | TODO | 평가·모델 지표. 역할별 Bedrock 호출 수·입출력 토큰·지연, 판정 분포(`decided_by`별), `EXECUTION_ERROR`, checkpoint 재개 횟수가 CloudWatch 메트릭(EMF)으로 남는다 |
+| O-04 | P2 | TODO | 분산 추적. API Gateway·Lambda에 X-Ray를 켜고 Bedrock·GitHub·AWS Resource Tool 호출이 하위 구간으로 보인다. 요청 하나를 API → Queue → Worker까지 따라갈 수 있다 |
+| O-05 | P2 | TODO | 데모 관측 live source. `DemoRunMetricsSource`에 CloudWatch·CloudTrail·Cost Explorer 어댑터를 주입해 `GET /deployments/{id}/observability`가 404가 아니라 일곱 항목을 반환한다(값이 없으면 게이트 미충족, fail-closed) ([ADR-0021](adr/ADR-0021-demo-and-release-readiness-gate.md) §3). O-03 이후 |
 
 ## 선행 관계
 
 - V-03 → V-04 → V-05 → V-07
 - V-02는 다른 라이브 작업 전에 먼저 확인한다(비용·공개 저장소 노출).
+- O-03 → O-05 → F-04, O-05 → V-07(release gate 관측·비용 기록).
+- F-01·V-05 → F-05 → F-06.

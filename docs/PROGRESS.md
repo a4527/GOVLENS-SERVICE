@@ -12,6 +12,7 @@
 | 잔존 AWS 리소스·GitHub 설정 (V-02, V-03) | TODO | 라이브 작업 전에 비용·노출과 개인 계정 기준 설정을 확인한다 |
 | 폐루프 라이브 E2E (V-04, V-05) | TODO | read Role 권한 반영 후 apply·Post-Deploy Verification 완주 |
 | 품질 근거 확장 (F-01, V-06, V-07) | TODO | EC2/RDS/ALB Golden Case, 점수 경계 라이브 측정, M4 release gate 실측 |
+| 관측 구현 (O-01–O-05) | TODO | 현재는 Artifact CloudTrail과 정책 추출 DLQ 알람 1개뿐. 구조화 로그·핵심 알람부터 |
 
 작업 상태의 기준은 [TASKS](TASKS.md)다.
 
