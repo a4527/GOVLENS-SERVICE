@@ -1,5 +1,7 @@
 # ADR-0005: Serverless workflow execution
 
+> **2026-11-23 일부 대체:** Worker를 LangGraph subgraph로 둔다는 부분은 [DEC-0029](../DECISIONS.md#dec-0029)로 대체됐다. LangGraph는 Parent Orchestrator에만 쓰고 Worker는 일반 Python이다. 기능별 Lambda·`job_id` 상태 관리·30초 동기 예산 결정은 유효하다.
+
 ## Context
 
 Assessment와 Remediation은 장시간 실행, 외부 Tool 호출, 승인 대기를 포함할 수 있다. 초기부터 Container/EC2를 도입하면 운영 부담이 커지고, Lambda만으로 모든 작업을 동기 처리하면 제한 시간과 재시도 문제가 생긴다.

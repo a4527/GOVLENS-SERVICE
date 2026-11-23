@@ -43,5 +43,5 @@
       남아 있지 않음
 - [ ] `docs/TASKS.md`에서 릴리스 범위의 P0·P1 작업이 `DONE`
 
-품질 목표 미달 시 목표를 낮추지 않는다. rubric/prompt/Golden Case를 재고정해 재실행하거나
-ADR-0003 절차로 Anchor 전환을 결정한다.
+품질 목표 미달 시 목표를 낮추지 않는다. rubric/prompt/Golden Case를 재고정해 재실행한다
+(ADR-0003의 Anchor 전환은 ADR-0024로 폐기됐다).

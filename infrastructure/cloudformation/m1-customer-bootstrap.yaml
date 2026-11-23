@@ -153,6 +153,11 @@ Resources:
                   - cloudwatch:DeleteAlarms
                   - cloudwatch:DescribeAlarms
                   - cloudwatch:PutMetricAlarm
+                  # Stack-level tags (DEC-0030) propagate to the alarm; without these the
+                  # tagged update fails on the alarm the same way.
+                  - cloudwatch:ListTagsForResource
+                  - cloudwatch:TagResource
+                  - cloudwatch:UntagResource
                 Resource: "*"
               - Sid: ProvisionFoundationStorageAndAudit
                 Effect: Allow
@@ -216,7 +221,8 @@ Resources:
                   cloudformation:DescribeChangeSet, cloudformation:DescribeStackEvents,
                   cloudformation:DescribeStacks, cloudformation:ExecuteChangeSet,
                   cloudformation:GetTemplate, cloudformation:GetTemplateSummary,
-                  cloudformation:ListChangeSets, cloudformation:ListStackResources]
+                  cloudformation:ListChangeSets, cloudformation:ListStackResources,
+                  cloudformation:TagResource, cloudformation:UntagResource]
                 Resource: !Sub "arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/${FoundationStackName}/*"
               # DescribeEvents does not support resource-level IAM permissions. The
               # workflow queries only failed events and excludes ResourceProperties.

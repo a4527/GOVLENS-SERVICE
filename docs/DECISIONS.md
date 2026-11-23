@@ -2,7 +2,7 @@
 
 중요 결정의 상태·ADR 링크와 짧은 결정을 관리한다. ADR 번호는 DEC 번호를 따른다(`DEC-0024` ↔ `ADR-0024`).
 
-상태가 따로 적히지 않은 ADR(0001–0017, 0024, 0026)은 팀 프로젝트 기간에 채택돼 구현에 반영된 결정이므로 `Accepted`로 본다.
+상태가 따로 적히지 않은 ADR(0001–0017, 0024, 0026)은 팀 프로젝트 기간에 채택돼 구현에 반영된 결정이므로 `Accepted`로 본다. 이후 대체된 결정은 아래 표의 상태를 따른다.
 
 ## 중요 결정 · ADR 목록
 
@@ -10,9 +10,9 @@
 | --- | --- | --- | --- | --- |
 | `DEC-0001` | Repository and delivery workflow | Partially Superseded | [ADR-0001](adr/ADR-0001-repository-and-delivery.md) | 브랜치·진행 관리 부분 → DEC-0028 |
 | `DEC-0002` | AI evaluation boundary | Accepted | [ADR-0002](adr/ADR-0002-ai-evaluation-boundary.md) | — |
-| `DEC-0003` | Continuous scoring with reliability-triggered anchors | Accepted | [ADR-0003](adr/ADR-0003-scoring-reliability.md) | — |
+| `DEC-0003` | Continuous scoring with reliability-triggered anchors | Superseded | [ADR-0003](adr/ADR-0003-scoring-reliability.md) | 연속 점수·Anchor 전환 → DEC-0024 (2026-09-05) |
 | `DEC-0004` | Policy knowledge architecture without RAG | Accepted | [ADR-0004](adr/ADR-0004-policy-knowledge-architecture.md) | — |
-| `DEC-0005` | Serverless workflow execution | Accepted | [ADR-0005](adr/ADR-0005-serverless-workflow-execution.md) | — |
+| `DEC-0005` | Serverless workflow execution | Partially Superseded | [ADR-0005](adr/ADR-0005-serverless-workflow-execution.md) | Worker의 LangGraph subgraph 부분 → DEC-0029 |
 | `DEC-0006` | Persistence and artifact storage boundary | Accepted | [ADR-0006](adr/ADR-0006-persistence-and-artifact-storage.md) | — |
 | `DEC-0007` | Approved deployment boundary | Accepted | [ADR-0007](adr/ADR-0007-approved-deployment-boundary.md) | — |
 | `DEC-0008` | Customer deployment topology | Accepted | [ADR-0008](adr/ADR-0008-customer-deployment-topology.md) | — |
@@ -47,6 +47,18 @@
 
 - 결정일: 2026-11-23 · 상태: Accepted · 대체: DEC-0001(ADR-0001)의 브랜치·진행 관리 부분
 - 결정·이유: 혼자 운영하므로 `dev` 통합 브랜치와 Owner 승인·`.ai/` 규칙을 없애고, `type/kebab-case` 작업 브랜치에서 `main`으로 PR을 열어 CI 통과 후 병합한다. 진행 관리는 `docs/TASKS.md`·`docs/PROGRESS.md`로 옮긴다. Monorepo + 별도 Customer IaC Repository 구조는 유지한다.
+
+<a id="dec-0029"></a>
+### DEC-0029 · Worker는 LangGraph 없이 일반 Python으로 유지한다
+
+- 결정일: 2026-11-23 · 상태: Accepted · 대체: DEC-0005(ADR-0005)의 "Worker = LangGraph subgraph" 부분 · 검토: [제안서](proposals/LANGGRAPH-REMEDIATION-WORKER.md)
+- 결정·이유: LangGraph는 자연어 진입점인 Parent Orchestrator에만 쓴다. Assessment·Remediation·Deployment Worker는 SQS + DynamoDB checkpoint의 일반 Python(ADR-0013)으로 둔다. Remediation의 생성·검증·재요청 반복은 이미 코드에 있고 검증 단계를 늘릴 계획이 없어, 옮겨도 동작 이득 없이 의존성·Layer 크기만 늘기 때문이다.
+
+<a id="dec-0030"></a>
+### DEC-0030 · 개인 sandbox는 단일 AWS 계정, Foundation 유지·고객 workload는 매일 삭제
+
+- 결정일: 2026-11-23 · 상태: Accepted
+- 결정·이유: 비용 때문에 플랫폼(bootstrap·Foundation)과 고객 쪽(onboarding·workload)을 개인 AWS 계정 하나에 둔다(팀 기간 sandbox와 같은 구성, 이전 팀 계정은 쓰지 않는다). Foundation은 유휴 비용이 거의 없고 이름 고정 `Retain` 리소스(DynamoDB·S3·Cognito·CloudTrail) 때문에 재생성이 실패하므로 유지하고, 비용이 드는 customer-demo workload(EC2·RDS·ALB)만 작업일마다 `terraform apply`/`destroy`한다. 계정 정리 가능성에 대비해 고객 배포 경로(`m1-customer-bootstrap` → Foundation → 고객 onboarding)를 그대로 재실행하는 bootstrap을 두고, 모든 리소스에 공통 태그 `Owner`·`Project`·`Layer`(`bootstrap`|`foundation`|`customer-onboarding`|`customer-workload`)를 붙인다. 계정 ID·`Owner` 값은 공개 저장소에 두지 않고 배포 파라미터·GitHub Variable로 주입한다.
 
 ## 기록·변경 규칙
 

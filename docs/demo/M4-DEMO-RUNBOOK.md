@@ -129,7 +129,7 @@ payload는 `deployment_id`, `commit_sha`, `plan_hash`, `run_id`, `conclusion`만
 ### 4-0. 준비 (발표 1시간 전)
 
 - GitHub App installation token 재발급 → Secrets Manager 갱신(handoff §2). 1시간 만료다.
-- 고객 저장소 `awsproject-team1/test` main이 여섯 토글 위반 조합(`b283b6b` 계열)인지, sandbox 버킷의
+- 고객 저장소 `a4527/GOVLENS-CUSTOMER` main이 여섯 토글 위반 조합(`b283b6b` 계열)인지, sandbox 버킷의
   public access block이 위반 상태인지 확인한다. 이것이 시연의 **시작 상태**다(정리하지 않는다).
 - SPA 로컬 실행(호스팅 리소스 없음, Cognito callback은 `http://localhost:5173` 기본값):
   ```bash
@@ -151,7 +151,7 @@ payload는 `deployment_id`, `commit_sha`, `plan_hash`, `run_id`, `conclusion`만
 | 3 | Initial Assessment 시작 | SPA "평가 시작" | coverage 18/18, findings에 위반 다수 |
 | 4 | Finding 설명·evidence | SPA 리포트 | 정책 locator와 리소스 evidence가 나뉘어 보인다; 사람 검토 항목은 조치 버튼 없음 |
 | 5 | 조치 요청 | Finding 카드의 조치 버튼 (S3-PUBLIC-001) | decision `TERRAFORM_PATCH`; Worker가 Bedrock patch 생성 |
-| 6 | PR이 열렸다 | GitHub `awsproject-team1/test` PR 목록 | branch `remediation/{finding_id}/…`, 사람이 검토·머지 |
+| 6 | PR이 열렸다 | GitHub `a4527/GOVLENS-CUSTOMER` PR 목록 | branch `remediation/{finding_id}/…`, 사람이 검토·머지 |
 | 7 | Deployment 생성·plan | `POST /remediations/{id}/deployments` (curl) → SPA 승인 화면 | `commit_sha`(merge commit)·`plan_hash` 표시 |
 | 8 | 사람 승인 | SPA 승인 버튼 | 승인 없이는 apply가 없다는 점을 말로 짚는다 |
 | 9 | apply | GitHub Actions `terraform-apply` (protected Environment 2차 게이트) | plan_hash·state lineage 재검증 뒤 saved plan만 적용 |

@@ -112,8 +112,11 @@ class BootstrapExecutionRoleCoversFoundationTest(unittest.TestCase):
                     f"update would fail with AccessDenied and roll back — {missing}",
                 )
 
-    def test_alarm_management_is_scoped_to_the_three_actions_cloudformation_needs(self) -> None:
-        """`cloudwatch:*` would also cover dashboards, log-based metrics and more; keep it narrow."""
+    def test_alarm_management_is_scoped_to_the_actions_cloudformation_needs(self) -> None:
+        """`cloudwatch:*` would also cover dashboards, log-based metrics and more; keep it narrow.
+
+        The tag actions exist because stack-level tags (DEC-0030) propagate to the alarm.
+        """
         for bootstrap in BOOTSTRAPS:
             with self.subTest(bootstrap=bootstrap.name):
                 role = _template(bootstrap)["Resources"]["FoundationExecutionRole"]
@@ -133,7 +136,10 @@ class BootstrapExecutionRoleCoversFoundationTest(unittest.TestCase):
                     {
                         "cloudwatch:DeleteAlarms",
                         "cloudwatch:DescribeAlarms",
+                        "cloudwatch:ListTagsForResource",
                         "cloudwatch:PutMetricAlarm",
+                        "cloudwatch:TagResource",
+                        "cloudwatch:UntagResource",
                     },
                 )
 

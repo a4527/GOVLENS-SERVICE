@@ -121,7 +121,7 @@ Exit code:
 - `EXECUTION_ERROR`/provider error = 0
 - 누락/추가/중복 observation = 0
 
-5회 반복에서는 한 번의 실패도 80%이므로 해당 Case가 실패한다. 목표를 낮추지 않는다. 미달 시 prompt/rubric/Golden Case를 version-up해 재승인하거나, score 편차가 지속될 때만 ADR-0003의 Anchor 절차를 따른다.
+5회 반복에서는 한 번의 실패도 80%이므로 해당 Case가 실패한다. 목표를 낮추지 않는다. 미달 시 prompt/rubric/Golden Case를 version-up해 재승인한다(ADR-0003의 Anchor 절차는 ADR-0024로 폐기됐다).
 
 ## A 관측·비용 및 D 실행 증적 결합
 
