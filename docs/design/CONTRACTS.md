@@ -37,15 +37,16 @@
 **`score`는 status의 재진술이다 (2026-09-05, ADR-0024).** PASS 100, FAIL 0, 판정이 아닌 status는 0
 (`score_for_status`). 모든 producer가 이 값을 쓰며, 모델이 보낸 숫자는 계약 검증(범위·유한성)만 받고
 버린다. 부분 충족은 `observed_satisfied`/`observed_total`(둘 다 있거나 둘 다 없음)로 남고, 판정 주체는
-`decided_by`(`CODE` | `MODEL`, 기본 `MODEL`)로 남는다. 연속 점수와 Anchor 전환은 폐기됐다 — 아래 두
-문단은 계약 필드가 남아 있는 이유를 설명하는 역사다.
+`decided_by`(`CODE` | `MODEL`, 기본 `MODEL`)로 남는다. 연속 점수와 Anchor 전환은 폐기됐다 — 다음 문단과
+`scoring_mode` 문단은 계약 필드가 남아 있는 이유를 설명하는 역사다.
 
-`score`는 원래 0–100 범위의 연속 값이었다. Golden Dataset 반복 평가에서 편차가 ±10점을 지속적으로 넘겨 Anchor 방식으로 전환한 경우에만 `{0, 15, 30, 50, 70, 85, 100}` 중 하나여야 했다. 코드가 현재 Scoring 정책, Schema와 Evidence Reference를 검증한다.
+`score`는 원래 0–100 범위의 연속 값이었고, Golden Dataset 반복 평가에서 편차가 ±10점을 지속적으로 넘겨 Anchor 방식으로 전환한 경우에만 `{0, 15, 30, 50, 70, 85, 100}` 중 하나여야 했다(ADR-0003, ADR-0024로 폐기).
 
-`packages/contracts/assessments.py`는 V3 평가 단계(`INITIAL`, `DEPLOYMENT_READINESS`, `POST_DEPLOY_VERIFICATION`), `EvaluationPerspective`(`IAC`, `AWS_ACTUAL`, `DRIFT`)와 `EvaluationResult`의 기본 검증을 제공한다. 각 결과는 평가에 실제 사용된 `model_profile_id`를 반드시 보존한다. Initial Assessment는 동일한 Terraform 관리 대상의 IaC Compliance, Actual Compliance, Drift를 이 관점으로 분리한다. Score 산출 자체는 AI Evaluator가 담당하며 Contract는 범위와 구조만 검증한다.
+`packages/contracts/assessments.py`는 V3 평가 단계(`INITIAL`, `DEPLOYMENT_READINESS`, `POST_DEPLOY_VERIFICATION`), `EvaluationPerspective`(`IAC`, `AWS_ACTUAL`, `DRIFT`)와 `EvaluationResult`의 기본 검증을 제공한다. 각 결과는 평가에 실제 사용된 `model_profile_id`를 반드시 보존한다. Initial Assessment는 동일한 Terraform 관리 대상의 IaC Compliance, Actual Compliance, Drift를 이 관점으로 분리한다. score는 Runtime이 status에서 정하고(`score_for_status`) Contract는 범위와 구조를 검증한다.
 
-`scoring_mode`의 기본값은 `CONTINUOUS`다. 신뢰성 Gate가 Anchor 전환을 승인하면
-`ANCHORED`를 명시하고 score는 `{0, 15, 30, 50, 70, 85, 100}`만 허용한다.
+`scoring_mode` 필드는 계약 호환을 위해 남아 있으며 기본값은 `CONTINUOUS`다. 원래는 신뢰성 Gate가
+Anchor 전환을 승인하면 `ANCHORED`를 명시하고 score를 `{0, 15, 30, 50, 70, 85, 100}`로 제한하는
+용도였으나, 그 전환 경로는 ADR-0024로 폐기됐다.
 
 **판정이 아닌 status의 score는 Runtime이 0으로 고정한다 (2026-09-04).** `MANUAL_REVIEW`,
 `INSUFFICIENT_EVIDENCE`, `OUT_OF_SCOPE`는 준수 수준 판정이 아니므로 모델이 어떤 숫자를 내더라도
@@ -55,7 +56,7 @@ status(`actual_evaluator.INSUFFICIENT_EVIDENCE_SCORE`, `manual_review.MANUAL_REV
 같은 입력이 실행마다 다른 점수를 갖지 않게 하고, readiness 가중 평균에 판정 아닌 숫자가 섞이지
 않게 하며, `INSUFFICIENT_EVIDENCE`+높은 점수 같은 계약 모순을 저장 계층에서 만들 수 없게 한다.
 score 필드 자체는 Contract대로 항상 존재한다(범위·유한성 검증은 파서에서: NaN·±inf·문자열·bool 거부).
-PASS/FAIL의 연속 점수는 그대로 모델이 정하며, 반복 평가의 실제 편차는
+2026-09-05부터는 PASS/FAIL의 score도 ADR-0024에 따라 status로 고정된다(위 문단). 반복 평가의 실제 편차는
 `scripts/measure_score_consistency.py`로 측정해 보고한다(허용 오차는 이 스크립트가 정하지 않는다).
 
 **이 고정은 Code가 하고 prompt는 하지 않는다.** 처음 구현에서는 prompt에도 세 status와 각각의

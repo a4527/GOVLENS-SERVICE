@@ -84,7 +84,7 @@ Customer Workload (EC2 / RDS / ALB / S3)
 
 ## Responsibility boundary
 
-Code는 Customer/AWS Account/Repository/Policy Profile 범위, Tool 권한, 출력 스키마, 점수 범위와 (도입 시) Score Anchor, Evidence reference, 상태 저장, Coverage를 검증한다. AI Evaluator는 승인된 Rule 하나에 대해 판정(status), 0–100 점수, Rationale, 그리고 허용된 Evidence 부분집합만 선택한다. **적용 Rule은 Profile allow-list가, Severity는 승인된 Rule이, Perspective·버전·Model Profile은 Runtime이 정하며 AI가 고르지 않는다** (`apps/backend/assessment/bedrock.py`). AWS Actual 관점은 Rule의 `required_evidence`가 가리키는 문서 경로를 모델 호출 전에 검사해 근거가 없으면 Code가 `INSUFFICIENT_EVIDENCE`를 기록한다(ADR-0023 §2). 반복 실행 편차가 목표인 ±10점을 지속적으로 넘을 때에만 고정 Anchor 집합에서 점수를 선택하도록 전환한다.
+Code는 Customer/AWS Account/Repository/Policy Profile 범위, Tool 권한, 출력 스키마, 점수 범위, Evidence reference, 상태 저장, Coverage를 검증한다. AI Evaluator는 승인된 Rule 하나에 대해 판정(status), Rationale, 그리고 허용된 Evidence 부분집합만 선택한다. **적용 Rule은 Profile allow-list가, Severity는 승인된 Rule이, Perspective·버전·Model Profile은 Runtime이 정하며 AI가 고르지 않는다** (`apps/backend/assessment/bedrock.py`). AWS Actual 관점은 Rule의 `required_evidence`가 가리키는 문서 경로를 모델 호출 전에 검사해 근거가 없으면 Code가 `INSUFFICIENT_EVIDENCE`를 기록한다(ADR-0023 §2). `score`는 모델이 정하지 않고 Runtime이 status에서 정한다(PASS 100, FAIL 0, 판정이 아닌 status 0 — ADR-0024, [CONTRACTS](design/CONTRACTS.md)).
 
 Parent Orchestrator Agent는 자연어 요청의 의도와 후보 selector를 해석한다. 정책 질의는
 Parent 안에서 Policy Q&A로 처리하고, 실행 의도는 Assessment, Remediation, Deployment 중
@@ -233,8 +233,8 @@ Verification은 Assessment Profile을 재사용하므로 MVP에서 Deployment �
 않는다.
 
 (ADR-0021) 릴리스(태그) 전에는 Golden Dataset 반복 평가 리포트를 남기며 목표
-미달이면 릴리스를 진행하지 않는다. 미달 시 선택지는 rubric/prompt/Golden Case 재고정 또는 ADR-0003
-절차에 따른 Anchor 전환이며, 목표치는 낮추지 않는다. 세 관점(`IAC`,
+미달이면 릴리스를 진행하지 않는다. 미달 시 rubric/prompt/Golden Case를 재고정해 다시 측정하며,
+목표치는 낮추지 않는다(ADR-0003의 Anchor 전환은 ADR-0024로 폐기). 세 관점(`IAC`,
 `AWS_ACTUAL`, `DRIFT`) 중 하나라도 Golden Case가 없어 측정하지 못한 리포트는 Gate 통과 근거로 쓰지
 않는다. ADR-0022에 따라 M4 live report는 customer runtime에서 Post-Deploy 18 Case를 5회 반복하고,
 IAC/AWS_ACTUAL 60회 Bedrock 결과와 같은 run에서 Code로 파생한 DRIFT 30개를 검증한다. Private

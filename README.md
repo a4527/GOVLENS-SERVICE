@@ -75,7 +75,7 @@ Deploy     : GitHub App + GitHub Actions(OIDC) CI / plan / approved apply
 | Auth / Edge | Cognito, API Gateway, CloudFront |
 | Async | SQS (+ DLQ), EventBridge |
 | IaC / Deploy | Terraform, CloudFormation, GitHub Actions (OIDC) |
-| Quality | Ruff, unittest, cfn-lint, TFLint, Checkov |
+| Quality | Ruff, unittest, cfn-lint, Gitleaks |
 
 ---
 
@@ -84,7 +84,7 @@ Deploy     : GitHub App + GitHub Actions(OIDC) CI / plan / approved apply
 - **평가 단위**: `Resource × Rule`
 - **관점**: `IAC`, `AWS_ACTUAL`, `DRIFT`
 - **상태**: `PASS`, `FAIL`, `MANUAL_REVIEW`, `INSUFFICIENT_EVIDENCE`, `OUT_OF_SCOPE`, `EXECUTION_ERROR`
-- **점수**: 기본 0–100 연속 점수. 사실이 명확한 항목은 코드가 결정적으로 판정하고, 해석이 필요한 항목만 모델이 판단합니다.
+- **점수**: 결과별 점수는 판정의 재진술(PASS 100, FAIL 0, 판정이 아닌 상태 0)이고, Readiness는 판정된 결과만 severity로 가중 평균합니다. 사실이 명확한 항목은 코드가 결정적으로 판정하고, 해석이 필요한 항목만 모델이 판단합니다.
 - **Readiness Score**: 공식 인증 점수가 아닌 `ISMS-P Readiness Score`이며, Coverage는 AI가 아니라 코드가 기계적으로 계산합니다.
 - Evidence는 정책 원문 위치 또는 content hash를 참조해 추적성을 유지합니다.
 
@@ -93,7 +93,7 @@ Deploy     : GitHub App + GitHub Actions(OIDC) CI / plan / approved apply
 ## 프로젝트 구조
 
 ```text
-kosa-aws-1/
+GOVLENS-SERVICE/
 ├── apps/
 │   ├── backend/        # 기능별 Lambda (auth, jobs, assessment, policy, remediation, deployment)
 │   └── frontend/       # React SPA 콘솔
@@ -114,7 +114,7 @@ kosa-aws-1/
 ### 사전 요구사항
 
 - Python 3.12 이상
-- Node.js 20 이상 (Frontend)
+- Node.js 24 (Frontend, CI 기준 24.14.0)
 
 ### Backend (Python) 부트스트랩
 

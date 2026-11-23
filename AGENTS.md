@@ -1,6 +1,6 @@
 # Govlens 에이전트 안내
 
-문서는 `docs/`에 두고 파일명은 대문자와 `.md` 확장자를 사용한다. `AGENTS.md`·`README.md`·`CLAUDE.md`는 기존 위치에 유지한다.
+문서는 `docs/`에 두고 파일명은 대문자와 `.md` 확장자를 사용한다(날짜·측정 기록인 `docs/worklogs/`·`docs/evaluations/data/`는 소문자 예외). `AGENTS.md`·`README.md`·`CLAUDE.md`는 기존 위치에 유지한다.
 
 ## 제품 불변식
 

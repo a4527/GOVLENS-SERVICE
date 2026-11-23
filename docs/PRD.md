@@ -57,7 +57,7 @@ Deployment처럼 비용·상태·변경을 유발할 수 있는 실행은 Backen
 
 - 평가 단위: `Resource × Rule`
 - 상태: `PASS`, `FAIL`, `MANUAL_REVIEW`, `INSUFFICIENT_EVIDENCE`, `OUT_OF_SCOPE`, `EXECUTION_ERROR`
-- 점수: 기본적으로 0–100 연속 점수를 생성한다. 반복 실행 편차가 큰 경우에만 `{0, 15, 30, 50, 70, 85, 100}` Anchor 집합을 도입한다. Anchor 값의 의미와 Rule/Source Rubric은 도입 전에 고정한다.
+- 점수: 결과별 `score`는 판정의 재진술이다(PASS 100, FAIL 0, 판정이 아닌 상태 0). 부분 충족은 점수가 아니라 관측 상세로 보여 주고, 근거가 없는 항목은 PASS가 아니라 미판정으로 따로 센다(ADR-0024).
 - 서비스의 점수는 공식 인증 점수나 합격 가능성이 아닌 `ISMS-P Readiness Score`다. Coverage는 AI가 아니라 Code가 기계적으로 계산해 점수와 함께 표시한다.
 - Evidence에는 정책 원문 위치 또는 content hash를 참조해 추적성을 유지한다.
 

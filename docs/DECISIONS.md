@@ -2,7 +2,7 @@
 
 중요 결정의 상태·ADR 링크와 짧은 결정을 관리한다. ADR 번호는 DEC 번호를 따른다(`DEC-0024` ↔ `ADR-0024`).
 
-상태가 따로 적히지 않은 ADR(0001–0017, 0024, 0026)은 팀 프로젝트 기간에 채택돼 구현에 반영된 결정이므로 `Accepted`로 본다.
+상태가 따로 적히지 않은 ADR(0001–0017, 0024, 0026)은 팀 프로젝트 기간에 채택돼 구현에 반영된 결정이므로 `Accepted`로 본다. 이후 대체된 결정은 아래 표의 상태를 따른다.
 
 ## 중요 결정 · ADR 목록
 
@@ -10,7 +10,7 @@
 | --- | --- | --- | --- | --- |
 | `DEC-0001` | Repository and delivery workflow | Partially Superseded | [ADR-0001](adr/ADR-0001-repository-and-delivery.md) | 브랜치·진행 관리 부분 → DEC-0028 |
 | `DEC-0002` | AI evaluation boundary | Accepted | [ADR-0002](adr/ADR-0002-ai-evaluation-boundary.md) | — |
-| `DEC-0003` | Continuous scoring with reliability-triggered anchors | Accepted | [ADR-0003](adr/ADR-0003-scoring-reliability.md) | — |
+| `DEC-0003` | Continuous scoring with reliability-triggered anchors | Superseded | [ADR-0003](adr/ADR-0003-scoring-reliability.md) | 연속 점수·Anchor 전환 → DEC-0024 (2026-09-05) |
 | `DEC-0004` | Policy knowledge architecture without RAG | Accepted | [ADR-0004](adr/ADR-0004-policy-knowledge-architecture.md) | — |
 | `DEC-0005` | Serverless workflow execution | Accepted | [ADR-0005](adr/ADR-0005-serverless-workflow-execution.md) | — |
 | `DEC-0006` | Persistence and artifact storage boundary | Accepted | [ADR-0006](adr/ADR-0006-persistence-and-artifact-storage.md) | — |
