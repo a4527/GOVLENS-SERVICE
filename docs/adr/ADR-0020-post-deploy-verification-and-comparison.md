@@ -19,7 +19,7 @@ Readiness Score 변화를 확인한다"다. 현재 코드·문서 상태에서 �
 
 1. **같은 Assessment에 재평가 결과를 넣을 수 없다.** result SK는
    `ASSESSMENT#{assessment_id}#RESULT#{resource_id}#RULE#{rule_id}#PERSPECTIVE#{perspective}`로
-   phase를 포함하지 않고(`docs/DATABASE.md`), immutable write는 조건부이므로 같은 좌표의 재평가는
+   phase를 포함하지 않고(`docs/design/DATABASE.md`), immutable write는 조건부이므로 같은 좌표의 재평가는
    충돌한다. Assessment record에 `phase`도 영속화되지 않으며
    `apps/backend/assessment/runtime.py`는 `AssessmentPhase.INITIAL`을 하드코딩한다.
 2. **재평가 범위가 정의되지 않았다.** 이번 apply가 건드린 리소스만 볼 것인지, 원 Finding의
@@ -31,7 +31,7 @@ Readiness Score 변화를 확인한다"다. 현재 코드·문서 상태에서 �
    `INSUFFICIENT_EVIDENCE`, `OUT_OF_SCOPE`, `EXECUTION_ERROR`, `rule_version` 변경)를 각 역할이
    임의로 해석하게 된다.
 5. **점수 비교 가능성 판단이 없다.** `readiness_score`는 미완료·`EXECUTION_ERROR`에서 `null`이고
-   (`docs/CONTRACTS.md`), 분모가 다른 두 Assessment의 delta는 오해를 부른다.
+   (`docs/design/CONTRACTS.md`), 분모가 다른 두 Assessment의 delta는 오해를 부른다.
 6. **억제(`SUPPRESSED`) Finding의 표시 규칙이 없다.** 예외는 조치 게이트인데 평가 결과에
    저장하면 만료 이후 과거 사실이 왜곡된다.
 7. **Job 경계가 모호하다.** `apps/backend/jobs/lifecycle.py`의 `_link_once`가 `assessment_id`를
@@ -57,7 +57,7 @@ Readiness Score 변화를 확인한다"다. 현재 코드·문서 상태에서 �
 
 - 기본값: 같은 Repository, 같은 Policy Profile **version**, 같은 적용 가능
   `Resource × Rule × Perspective` 집합을 새 commit에서 전체 재평가한다. 새 plan을 이 집합으로
-  저장하므로 Coverage 정의(`docs/CONTRACTS.md`)가 그대로 성립하고 Readiness Score가 비교 가능해진다.
+  저장하므로 Coverage 정의(`docs/design/CONTRACTS.md`)가 그대로 성립하고 Readiness Score가 비교 가능해진다.
 - 현재 MVP 규모는 S3 Rule 6건 × 3관점 = 18개 평가이므로 전체 재평가 비용이 축소 재평가의 복잡성보다
   작다.
 - 축소 재평가(이번 plan이 건드린 리소스 한정)는 옵션으로 허용하되, 그 결과의 비교는
@@ -146,7 +146,7 @@ Readiness Score 변화를 확인한다"다. 현재 코드·문서 상태에서 �
 
 - planned 집합을 **이미 존재하는 `ASSESSMENT#{assessment_id}#PLAN` item에 속성으로 추가해
   저장한다.** 그 item은 지금 planned 적용 가능 `Resource × Rule × Perspective`의 **개수**만 담는다
-  (`docs/DATABASE.md` Item layout). Assessment 시작 시 이미 쓰는 항목이므로 write가 늘지 않고
+  (`docs/design/DATABASE.md` Item layout). Assessment 시작 시 이미 쓰는 항목이므로 write가 늘지 않고
   속성만 늘어난다.
 - 조회 시 재구성은 채택하지 않는다. 비용 때문이 아니라 **원리적으로 불가능**하기 때문이다.
   planned 집합은 (리소스 목록 × Rule × 관점)에서 나오는데 리소스 목록은 시간이 지나면 달라진다.

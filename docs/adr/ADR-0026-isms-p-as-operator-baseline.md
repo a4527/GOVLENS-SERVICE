@@ -7,7 +7,7 @@
 리뷰어가 승인하며(ADR-0023), ISMS-P는 **모든 고객에게 같은 인증기준**이므로 저장소에 커밋된
 Registry로 두고 운영자 bootstrap이 고객 파티션에 게시한다 — 그래서 `PolicySourceKind.ISMS_P`,
 `fixtures/rules/sources.json`의 `isms-p-2023`, `control/x.y.z` locator, 게시 요청의 `baseline`,
-Profile의 `ISMS_P` Segment, 준비도의 원본별 분리가 이미 있다(`docs/POLICY_INGESTION.md`).
+Profile의 `ISMS_P` Segment, 준비도의 원본별 분리가 이미 있다(`docs/design/POLICY_INGESTION.md`).
 
 그런데 그 Registry의 내용은 ISMS-P가 아니었다. 16개 legacy Rule이 사내 체크리스트와 ISMS-P
 조항 5개를 함께 인용할 뿐, 인증기준 101개 항목 자체는 어디에도 없었다. 그래서 2026-09-05에
@@ -69,7 +69,7 @@ severity는 Catalog의 MANUAL 통제 기본값(MEDIUM) 하나다. 항목 사이�
 write로 게시한다(멱등). 게시된 `profile-isms-p-baseline@v1`은 `GET /policy-profiles`에 나타나고,
 리뷰어가 Profile 게시 때 `baseline`으로 고른다 — 사람의 선택은 그대로 남는다. 그 Rule에는
 고객 승인 record가 없다: 고객이 올린 문서가 아니라 코드 리뷰를 거쳐 커밋된 Registry이기
-때문이다(`docs/POLICY_INGESTION.md`, `ProfileBaseline`).
+때문이다(`docs/design/POLICY_INGESTION.md`, `ProfileBaseline`).
 
 ### 5. 자동 판정 근거가 있는 항목은 자동 판정 Rule도 갖는다 (2026-09-05 보완)
 

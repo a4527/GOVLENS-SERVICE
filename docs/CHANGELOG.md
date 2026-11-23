@@ -1,0 +1,10 @@
+# Govlens 변경 이력
+
+사용자에게 의미 있는 제품 요구사항과 프로젝트 문서·구조의 변경을 날짜별로 기록한다.
+
+## 2026-11-23
+
+- 문서 구조와 비밀값 검사 훅을 초기화했다.
+- 개인 프로젝트로 전환했다. `dev` 브랜치를 없애고 작업 브랜치 → `main` PR로 CI 규칙을 바꿨다([DEC-0028](DECISIONS.md#dec-0028)).
+- 상세 설계는 `docs/design/`, sandbox·데모 런북은 `docs/sandbox/`·`docs/demo/`로 묶었다.
+- ADR을 `docs/adr/`로 옮기고 결정 목록(`DECISIONS.md`)을 만들었다. 팀 진행 기록은 `docs/archive/`에 보존하고 남은 일은 `TASKS.md`로 옮겼다.

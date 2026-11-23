@@ -23,7 +23,7 @@ The customer owns workload-specific IAM permissions. A generic template cannot k
 
 ## 2. Repository starter installation
 
-Copy the directory [`templates/customer-sandbox-terraform-repository`](../templates/customer-sandbox-terraform-repository/) into the root of the new customer-owned repository. It is intentionally a template, not deployable customer IaC.
+Copy the directory [`templates/customer-sandbox-terraform-repository`](../../templates/customer-sandbox-terraform-repository/) into the root of the new customer-owned repository. It is intentionally a template, not deployable customer IaC.
 
 Before a first pull request, the customer administrator must:
 
@@ -41,7 +41,7 @@ Before a first pull request, the customer administrator must:
 5. Add GitHub Environment variables. `customer-terraform-plan` needs `AWS_REGION`, `TF_PLAN_ROLE_ARN`, `TF_STATE_BUCKET`, `TF_STATE_KEY`, `TF_LOCK_TABLE`, and `SANDBOX_BUCKET_NAME`; `customer-terraform-apply` needs the same values except `TF_APPLY_ROLE_ARN` replaces `TF_PLAN_ROLE_ARN`. The state values and bucket name must be identical in both Environments.
 6. Configure the `customer-terraform-apply` GitHub Environment with required reviewers before enabling workflow dispatch. Keep Terraform `1.9.5`, the saved-plan-only apply, plan hash verification, and state `lineage`/`serial` verification unchanged.
 
-The templates are explained in [the Terraform workflow guide](../ci/terraform/README.md). The Foundation application deployment has a separate customer bootstrap and runbook; do not treat this Terraform workload state backend as Foundation state.
+The templates are explained in [the Terraform workflow guide](../../ci/terraform/README.md). The Foundation application deployment has a separate customer bootstrap and runbook; do not treat this Terraform workload state backend as Foundation state.
 
 ## 3. First safe test
 

@@ -94,7 +94,7 @@ REVIEW_REQUIRED_WARNINGS: frozenset[ExtractionWarningCode] = frozenset(
 class UploadedPolicyOriginal:
     """Server-issued identity and metadata of one finalized upload.
 
-    Client는 이 값 중 어느 것도 제안하지 않는다 (`docs/POLICY_INGESTION.md` Original
+    Client는 이 값 중 어느 것도 제안하지 않는다 (`docs/design/POLICY_INGESTION.md` Original
     finalization). Parser는 여기 담긴 checksum과 byte size를 실제 바이트로 다시 검증한다.
     """
 

@@ -68,7 +68,7 @@ Customer Workload (EC2 / RDS / ALB / S3)
 - Policy ingestion: 고객 정책 원본은 immutable S3 Artifact로 보존하고 비동기 검증·형식별 Parser가
   공통 Policy Document로 정규화한다. 원본 업로드만으로 Assessment에 활성화하지 않으며, 사람이
   승인한 Source/Rule/Profile version만 Policy Context가 사용한다. 상세 경계는
-  `docs/POLICY_INGESTION.md`가 정본이다.
+  `docs/design/POLICY_INGESTION.md`가 정본이다.
 - Policy authoring: 정규화된 문서에서 Rule 후보를 만드는 것은 전용 큐와 전용 IAM Role을 갖는
   Policy Authoring Worker다. 제품이 평가할 수 있는 범위는 code-owned Governance Control
   Catalog가 정의하며, AI는 그 경계 안에서 제안만 하고 판정·심각도·점수를 만들지 않는다. 정책
@@ -232,17 +232,19 @@ Verification은 Assessment Profile을 재사용하므로 MVP에서 Deployment �
 않는다. 벤치마크의 Deployment 후보는 근거 기록으로만 남기고, 결정적 판정 단계를 임의로 LLM화하지
 않는다.
 
-(ADR-0021) `dev → main` 통합 PR은 Golden Dataset 반복 평가 리포트를 첨부하며 목표
+(ADR-0021) 릴리스(태그) 전에는 Golden Dataset 반복 평가 리포트를 남기며 목표
 미달이면 릴리스를 진행하지 않는다. 미달 시 선택지는 rubric/prompt/Golden Case 재고정 또는 ADR-0003
-절차에 따른 Anchor 전환이며, 목표치를 낮추는 판단은 개인이 하지 않는다. 세 관점(`IAC`,
+절차에 따른 Anchor 전환이며, 목표치는 낮추지 않는다. 세 관점(`IAC`,
 `AWS_ACTUAL`, `DRIFT`) 중 하나라도 Golden Case가 없어 측정하지 못한 리포트는 Gate 통과 근거로 쓰지
 않는다. ADR-0022에 따라 M4 live report는 customer runtime에서 Post-Deploy 18 Case를 5회 반복하고,
 IAC/AWS_ACTUAL 60회 Bedrock 결과와 같은 run에서 Code로 파생한 DRIFT 30개를 검증한다. Private
 observation은 고객 경계에 두고 공개 release evidence에는 aggregate와 digest만 남긴다.
 
-## Development ownership and repository boundaries
+## Component areas and repository boundaries
 
-| Role | Primary responsibility | Main areas |
+팀 프로젝트 기간의 역할 구분(A–D)을 구성 요소 영역 이름으로 유지한다. 1인 운영이므로 Owner 검토 절차는 없다([DEC-0028](DECISIONS.md#dec-0028)).
+
+| Area | Primary responsibility | Main areas |
 | --- | --- | --- |
 | **A — Platform/Backend** | 플랫폼 기반, 사용자, API와 durable workflow state | Cognito, API Gateway, 기능별 Lambda, Remediation policy 호출, Job/Outbox/Queue/revision, Exception/Approval/Audit, 공통 Storage, Frontend Skeleton |
 | **B — Policy/Governance Boundary** | AI 평가와 remediation 허용 범위의 정책 Boundary 제공 | 지원 문서 형식, Policy Source lifecycle, Rule Registry/Profile/Context, Remediation eligibility/exception/manual-review 판정 |
@@ -250,30 +252,17 @@ observation은 고객 경계에 두고 공개 release evidence에는 aggregate�
 | **D — Integration & Deployment Execution** | 결정적 외부 실행 adapter와 Deployment Worker | GitHub/AWS Tool, injected Patch/Sync port, Branch/Commit/PR, Terraform Plan/Apply, Deployment Worker, Post-Deploy read |
 | **Shared** | 여러 영역의 호환성과 릴리스 품질 유지 | Contracts, Integration Test, C4/ADR, E2E |
 
-- 역할 경계를 넘는 API·Schema 변경은 해당 Contract의 Producer와 Consumer Owner가 검토한다.
-- 구현체가 없지만 Contract가 확정된 의존성은 Fixture/Mock으로 병렬 개발한다.
-- 다른 역할의 기능은 작업 Branch에 직접 의존하지 않고, `dev`에 Merge된 Contract/구현을 기준으로 통합한다.
+- 영역 경계를 넘는 API·Schema 변경은 Contract(`packages/contracts/`)와 Contract Test를 같은 변경에서 갱신한다.
+- 구현체가 없지만 Contract가 확정된 의존성은 Fixture/Mock으로 먼저 개발할 수 있다.
 - `fixtures/rules/`는 개발 seed이자 bootstrap 입력이다. Runtime의 정본은 고객 partition의 승인된
   Rule이며(ADR-0023), M1 Worker는 커밋된 Registry를 읽지 않는다. M0 synthetic 경로만 기존 fixture
   방식을 유지한다.
 
 ## Data model
 
-Operational and domain metadata uses DynamoDB while large immutable artifacts use S3. The table strategy, access patterns, PK/SK, GSI, TTL, tenant isolation, and S3 reference contract are defined in `docs/DATABASE.md`.
+Operational and domain metadata uses DynamoDB while large immutable artifacts use S3. The table strategy, access patterns, PK/SK, GSI, TTL, tenant isolation, and S3 reference contract are defined in `docs/design/DATABASE.md`.
 
 ## Decision records
 
-장기 영향을 주는 선택은 `docs/decisions/`에서 관리한다. 현재 ADR은 Repository/Delivery,
-AI Evaluation Boundary, Scoring Reliability, Policy Knowledge, Serverless Workflow,
-Persistence/Artifact Storage, Approved Deployment Boundary, Customer Deployment Topology,
-M0 Contract Fixtures, M0 Platform Foundation, IaC/Actual/Drift 평가, Natural-language
-Orchestration/Model Profiles, SQS Resumable Worker, Artifact Audit/Tenant Isolation,
-Customer Policy Ingestion, M1 Finding/Readiness Projection, Remediation Scope/Exceptions,
-Remediation Consumption Contract, Approved Deployment Execution Boundary, Post-Deploy
-Verification/Comparison, Demo/Release Readiness Gate, M4 Golden Customer Runtime Observation
-Handoff를 다룬다 (ADR-0001~0022).
-
-ADR-0019(승인 배포 실행 경계), ADR-0020(Post-Deploy Verification과 before/after 비교),
-ADR-0021(Demo·Release readiness gate), ADR-0022(M4 Golden customer-runtime observations)는 모두
-`Accepted`다. 따라서 D의 live plan/apply와 A의 Deployment 생성·후속 전이는 ADR-0019 정의를 따라
-구현할 수 있고, C의 비교 projection은 ADR-0020, M4 품질 증적은 ADR-0022를 따른다.
+장기 영향을 주는 선택은 `docs/adr/`에 ADR로 두고, 결정 목록·상태·대체 관계는
+[DECISIONS.md](DECISIONS.md)에서 관리한다.

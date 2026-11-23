@@ -409,7 +409,7 @@ signature, Parser 지원 형식) 3자를 대조하고, Markdown/Plain text/CSV/X
 사용자 관리)는 새 typed Contract를 만들지 않고 위 수집 Contract와 Cognito 속성 위에서 동작한다.
 목록·scope·사용자 응답은 요약 dict이며 원문·units·정규화 text를 담지 않는다. 삭제는 승인 record가
 있는 Source를 거부하고(Profile evidence 보호), 사용자별 Profile 지정은 Cognito 표준 `profile`
-속성에 저장한다. HTTP 형태는 `docs/API.md`가 정본이다.
+속성에 저장한다. HTTP 형태는 `docs/design/API.md`가 정본이다.
 실패는 예외가 아니라 `FAILED` 상태와 failure code로 돌아온다.
 
 Parser 경계는 신뢰할 수 없는 고객 문서를 읽으므로 fail-closed 한도를 함께 강제한다: 업로드
@@ -430,7 +430,7 @@ zip 한도로는 잡히지 않는다 — 증폭이 압축 해제 이후 Parser �
 
 | 값 | 역할 |
 | --- | --- |
-| `RuleLifecycle` | `CANDIDATE`/`APPROVED`/`REJECTED`/`SUPERSEDED`. `docs/DATABASE.md`의 Rule metadata가 담는 lifecycle |
+| `RuleLifecycle` | `CANDIDATE`/`APPROVED`/`REJECTED`/`SUPERSEDED`. `docs/design/DATABASE.md`의 Rule metadata가 담는 lifecycle |
 | `RuleCandidate` | 승인 전 Rule. frozen이며 `approved()`가 새 값을 만든다 |
 | `PolicyCandidateExtraction` | C가 exact `READY` 정규화 문서에서 만든 immutable 후보 묶음. 문서 metadata, 후보와 extractor ID/version만 담고 원문·정규화 text는 담지 않는다. A는 이 결과를 저장해 review/publication read port에서 같은 문서 판본과 함께 복원한다. |
 | `PolicySourceApproval` | `(source_id, source_version, artifact_id, s3_version_id, content_sha256)`을 인용하는 immutable 승인 record |
@@ -443,7 +443,7 @@ zip 한도로는 잡히지 않는다 — 증폭이 압축 해제 이후 Parser �
   문장과 Rule이 고정한 hash가 같음을 승인 시점에 못 박는다. 이미 `REJECTED`/`SUPERSEDED`인
   후보는 거부한다 (`RULE_NOT_APPROVABLE`) — 재검토는 새 후보로 올린다. 이미 `APPROVED`인 후보를
   다시 넘기는 것은 허용한다. 승인 API가 at-least-once로 재시도될 수 있기 때문이다 (ADR-0013).
-- `publish_profile(...)` — `docs/POLICY_INGESTION.md`의 거부 조건 3건을 구현한다: 승인되지 않은
+- `publish_profile(...)` — `docs/design/POLICY_INGESTION.md`의 거부 조건 3건을 구현한다: 승인되지 않은
   Source/Rule 참조, 승인된 것과 다른 Source version 참조, 승인 record의
   `(artifact_id, s3_version_id, content_sha256)`과 어긋나는 Rule. 마지막 항목의 게시 시점 대조는
   `(artifact_id, content_sha256)`까지다 — `PolicySource`에 `s3_version_id` 필드가 없다. 두 값이
@@ -485,7 +485,7 @@ Registry는 S3·EC2·RDS·ALB 네 Resource 범위의 Rule을 담는다 (`rules.s
 | `profile-mvp-baseline` (`v2`) | S3 6 Rule | 승인된 MVP allow-list. 신규 유형 Rule을 넣지 않는다 |
 | `profile-multiresource-baseline` (`v1`) | S3 6 + EC2 3 + RDS 4 + ALB 2 = 15 Rule | 4종 확장 범위 |
 
-승인된 Profile에 신규 Rule을 끼워 넣지 않는 것은 `docs/POLICY_INGESTION.md`의 승인 경계를 우회하지
+승인된 Profile에 신규 Rule을 끼워 넣지 않는 것은 `docs/design/POLICY_INGESTION.md`의 승인 경계를 우회하지
 않기 위해서다. 어느 Profile로 평가할지는 고객 승인 시점에 정한다.
 
 `AWS::EC2::Volume`과 `AWS::EC2::Snapshot`은 Rule의 `resource_types`에는 나타나지만 독립 평가 대상
@@ -502,7 +502,7 @@ Coverage는 두 층으로 설명한다. `covered_controls()`는 Context가 근�
 그중 일부만 이번 Context에 들어올 수 있으므로, 인용됐다는 사실만으로 완전히 평가됐다고 보지 않는다.
 
 Registry의 read-only DynamoDB 어댑터는 `apps/backend/policy/dynamodb_catalog.py`이며
-`docs/DATABASE.md`의 `POLICY_PROFILE#`, `POLICY_SOURCE#`, `RULE#` key layout을 사용한다.
+`docs/design/DATABASE.md`의 `POLICY_PROFILE#`, `POLICY_SOURCE#`, `RULE#` key layout을 사용한다.
 Catalog 인스턴스는 하나의 `customer_id`에 묶여 다른 Customer partition을 표현할 수 없다.
 ## M0 Golden Dataset boundary
 
@@ -699,7 +699,7 @@ snapshot에 있는 `.tf` 파일이어야 하고, 내용이 실제로 달라야 �
 싣는다(`open_pull_request(patch, changes, description=...)`). reader가 없으면 생성기는 생성 전에
 fail-closed한다. 저장·digest·branch 규칙은 위와 같다.
 
-`GET /remediations/{remediationId}`는 이 item의 읽기 projection이다(`docs/API.md`). resource type은
+`GET /remediations/{remediationId}`는 이 item의 읽기 projection이다(`docs/design/API.md`). resource type은
 결과 item에 저장되지 않으므로 `RemediationTarget.resource_type`은 AWS_ACTUAL 결과의 `aws:` read
 locator에서 되돌린다(`assessment.actual.resource_type_for_evidence_reference`, S3로 하드코딩하지 않는다).
 
@@ -817,7 +817,7 @@ Bedrock 결과(60 calls)이고, DRIFT 6 Case는 같은 `(rule_id, run_number)`�
 `scripts/export_golden_observations.py`다. 같은 `BedrockStructuredEvaluator`로 평가하고 같은
 `derive_drift_results()`로 DRIFT를 파생하므로 producer와 consumer가 한 코드에서 정합한다. producer는
 `runtime_mode`를 호출자 선언으로만 채우며, `--customer-sandbox` 밖의 실행은 `DRY_RUN`으로 표시해 consumer가
-거부하게 한다. 실행 절차는 `docs/M4-GOLDEN-RELEASE-GATE.md`에 있다.
+거부하게 한다. 실행 절차는 `docs/evaluations/M4-GOLDEN-RELEASE-GATE.md`에 있다.
 
 `apps/backend/assessment/release_quality.py`의 exact-key parser가 observation bundle의 실행 ID,
 platform commit, repository/deployment/artifact digest, exact Model Profile, case/run/rule version,

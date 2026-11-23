@@ -33,14 +33,14 @@ ADR-0007은 "Apply는 Human Approval 뒤 GitHub Actions OIDC로만 실행하고 
 3. **apply 대상 commit이 PR head인지 merge commit인지 정해지지 않았다.** PR head를 apply하면
    default branch는 위반 상태로 남아 Post-Deploy Verification이 다시 `FAIL`을 낸다.
 4. **Deployment 생성 진입점이 없다.** `TerraformPlan`은 `deployment_id`를 필수로 요구하지만
-   `docs/API.md`에는 `/deployments/{deploymentId}/approve|reject`만 있다. D는 plan을 만들 때
+   `docs/design/API.md`에는 `/deployments/{deploymentId}/approve|reject`만 있다. D는 plan을 만들 때
    ID를 어디서 얻는지 알 수 없다.
 5. **apply 트리거 주체가 없다.** 승인 저장과 동시에 A가 트리거하면 재시도가 이중 apply가 된다.
 6. **고객 repository의 plan/apply workflow 파일 소유자가 없다.** `ci/terraform/`은 비어 있고
    GitHub App의 권한 범위도 문서화되지 않았다.
 7. **Plan/Apply 완료 Event의 payload와 위조 방어가 없다.** `WorkflowCommand`에
    `PLAN_COMPLETED`/`APPLY_COMPLETED`는 있으나 Event가 무엇을 담고 누가 무엇을 검증하는지 없다.
-8. **Deployment 상태 기계가 없다.** `DeploymentStatus`가 Contract에 없고 `docs/DATABASE.md`는
+8. **Deployment 상태 기계가 없다.** `DeploymentStatus`가 Contract에 없고 `docs/design/DATABASE.md`는
    Deployment item을 "Plan, approval, apply, verification state"로만 서술한다. `/reject`는
    endpoint 표에 한 줄 있을 뿐 권한·body·결과가 없다.
 
@@ -168,7 +168,7 @@ Finding → RemediationDecision → Patch → branch/commit/PR → 고객 CI
 
 ### 4. `deployment_id` 발급과 Deployment 생성
 
-- 발급자는 A다. Client는 `deployment_id`를 만들 수 없다 (`docs/DATABASE.md`의 ID 발급 규칙).
+- 발급자는 A다. Client는 `deployment_id`를 만들 수 없다 (`docs/design/DATABASE.md`의 ID 발급 규칙).
 - 진입점은 `POST /remediations/{remediationId}/deployments`이며 다음을 fail-closed로 검증한 뒤
   `DEPLOYMENT`, `JOB`, `OUTBOX`(`RUN_DEPLOYMENT`), `DEPLOYMENT_REQUESTED` audit를 하나의 조건부
   transaction으로 쓴다.
@@ -229,7 +229,7 @@ Finding → RemediationDecision → Patch → branch/commit/PR → 고객 CI
   하나라도 다르면 재시도하지 않고 `MANUAL_REVIEW`로 보낸다.
 - GitHub Actions에 DynamoDB write 권한을 주지 않는다. 외부 CI가 상태 정본을 직접 쓰면 승인
   경계 밖에서 Deployment 상태를 바꿀 수 있다.
-- **A/D 구현 경계(공유 계약, 상세는 `docs/DATABASE.md` "완료 Event 경계"):** `#EVENT#{run_id}` item은
+- **A/D 구현 경계(공유 계약, 상세는 `docs/design/DATABASE.md` "완료 Event 경계"):** `#EVENT#{run_id}` item은
   `status`로 두 단계를 갖는다. A/EventBridge가 완료 Event 수신 시 `run_id`만 담아
   `PENDING_VERIFICATION`으로 예약 write하고(재조회할 좌표 포인터일 뿐 사실 기록이 아니다), D Worker가
   그 좌표로 run을 재조회·대조한 뒤 검증된 `WorkflowRunFacts`로 같은 item을 `VERIFIED`로 확정한다.
@@ -249,7 +249,7 @@ rejection record와 그 `reason`, apply run reference와 conclusion, verificatio
 저장하면 같은 사실의 두 번째 사본이 되고, 두 사본이 어긋날 때 어느 쪽이 이기는지를 규칙으로 또
 만들어야 한다. 이 저장소는 같은 트레이드오프를 Readiness Score에서 이미 한 번 판단했다 —
 "report read 시 결정적으로 계산한다 … 진행 중 Assessment에 오래된 점수가 남지 않는다"
-(`docs/DATABASE.md`). 파생으로 두면 조건부 write 조정도 마이그레이션도 없다.
+(`docs/design/DATABASE.md`). 파생으로 두면 조건부 write 조정도 마이그레이션도 없다.
 
 **게이트 판정은 파생값을 읽지 않는다.** 승인 여부와 apply 허용 여부는 5·7번대로 사실을 직접
 재조회해 판단한다. 파생값은 화면과 API 응답 전용이다. 이중 apply를 막는 정본은 아래 표의 전이가
@@ -257,8 +257,8 @@ rejection record와 그 `reason`, apply run reference와 conclusion, verificatio
 
 상태별 목록 조회는 M3·M4 API 범위에 없다. 필요해지면
 `GSI2PK = CUSTOMER#{customer_id}#DEPLOYMENT_STATUS#{status}`로 materialize하며, 그 시점은
-`PROGRESS.md`의 "completed counter storage migration"과 같은 작업이다. 그때까지 저장하지 않는다 —
-Job의 `GSI2`도 같은 이유로 비워 둔다(`docs/DATABASE.md`).
+`docs/archive/PROGRESS-team-2026.md`의 "completed counter storage migration"과 같은 작업이다. 그때까지 저장하지 않는다 —
+Job의 `GSI2`도 같은 이유로 비워 둔다(`docs/design/DATABASE.md`).
 
 표현 값의 전이는 다음과 같다.
 
@@ -380,8 +380,8 @@ DynamoDB에 content-addressed로 저장한다 — Artifact bucket은 ADR-0014의
 - **Proposed options:** 위 Decision 8개 항목. 각 항목의 대안과 거부 이유는 Rejected alternatives에
   있다.
 - **Final record:** `Accepted` (2026-09-02). A·D·Security가 서명 PR 리뷰 approve로 서명했다.
-  Decision 1~8을 수정 없이 채택한다. 같은 PR에서 이 상태 전환과 함께 `docs/API.md`,
-  `docs/CONTRACTS.md`, `docs/DATABASE.md`, `docs/DESIGN.md`, `docs/architecture/C4-CONTAINER.md`의
+  Decision 1~8을 수정 없이 채택한다. 같은 PR에서 이 상태 전환과 함께 `docs/design/API.md`,
+  `docs/design/CONTRACTS.md`, `docs/design/DATABASE.md`, `docs/DESIGN.md`, `docs/design/architecture/C4-CONTAINER.md`의
   계획 표기를 구현 표기로 옮긴다. Blocks에 묶여 있던 구현 커밋(M2 A audit 정본화, M2/M3 D live
   plan/apply, M3 A Deployment 생성·상태 API)은 이 서명 이후 A(PR #40)와 D 브랜치에서 병렬로
   시작한다.

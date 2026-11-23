@@ -1,6 +1,6 @@
 """Customer policy ingestion contracts: supported formats and normalized documents.
 
-`docs/POLICY_INGESTION.md`(ADR-0015)의 수집 경계 중 문서 의미 부분을 실행 가능한 Contract로
+`docs/design/POLICY_INGESTION.md`(ADR-0015)의 수집 경계 중 문서 의미 부분을 실행 가능한 Contract로
 고정한다. 업로드 세션과 저장 인프라는 A가, AI 후보 추출은 C가 담당하며 둘 다 여기서 정의한
 `NormalizedPolicyDocument`를 소비한다.
 
@@ -25,7 +25,7 @@ from packages.contracts._validation import (
 class PolicySourceFormat(StrEnum):
     """The supported customer policy file formats.
 
-    이 목록이 지원 형식의 전부다 (`docs/POLICY_INGESTION.md` Format policy). 목록에 없는
+    이 목록이 지원 형식의 전부다 (`docs/design/POLICY_INGESTION.md` Format policy). 목록에 없는
     형식은 업로드가 성공하더라도 `UNSUPPORTED_FORMAT`으로 종료한다. 파일 형식은 Source
     종류(`PolicySourceKind`)와 별개 개념이며 서로 대체하지 않는다.
     """
@@ -66,7 +66,7 @@ class IngestionStatus(StrEnum):
 
 
 # 사람 승인이 붙을 수 있는 유일한 처리 상태. Rule과 Profile은 이 상태의 Source version만
-# 참조할 수 있다 (`docs/POLICY_INGESTION.md` Normalized document contract).
+# 참조할 수 있다 (`docs/design/POLICY_INGESTION.md` Normalized document contract).
 APPROVABLE_STATUSES: frozenset[IngestionStatus] = frozenset({IngestionStatus.READY})
 
 TERMINAL_STATUSES: frozenset[IngestionStatus] = frozenset(
@@ -155,7 +155,7 @@ class NormalizedPolicyDocument:
     """The common parser output every supported format must produce.
 
     원본 identity 5-tuple(`source_id`, `source_version`, `artifact_id`, `s3_version_id`,
-    `content_sha256`)은 `docs/POLICY_INGESTION.md`의 Original finalization 규칙이 상태 전이와
+    `content_sha256`)은 `docs/design/POLICY_INGESTION.md`의 Original finalization 규칙이 상태 전이와
     승인을 묶는 값이다. Parser는 이 tuple을 인용만 하고 만들지 않는다.
 
     탐지 결과와 Parser/정규화 Artifact 항목은 `FAILED`에서만 비어 있을 수 있다. 미지원 형식은
@@ -342,7 +342,7 @@ class PolicySourceUploadRequest:
     """What a client may state when starting an upload session.
 
     `customer_id`, bucket, object key, `source_id`, `source_version`, 처리 상태는 여기에 없다.
-    `docs/POLICY_INGESTION.md`의 Original finalization 규칙상 Backend가 발급한다.
+    `docs/design/POLICY_INGESTION.md`의 Original finalization 규칙상 Backend가 발급한다.
     """
 
     filename: str

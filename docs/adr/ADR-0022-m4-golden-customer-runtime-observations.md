@@ -38,7 +38,7 @@ ADR-0021은 실제 customer sandbox의 Golden 반복 평가 리포트를 `dev �
 
 DRIFT가 Bedrock 사용량을 보고하거나 Code 파생값이 IAC/Actual 쌍과 다르면 입력 전체를 거부한다.
 
-Initial 18 Case는 fixture/closed-loop Coverage에 남고 ADR-0011 의미 회귀를 검증한다. M4 실제 반복 리포트는 `PROGRESS.md`와 ADR-0021이 요구한 Post-Deploy 18 Case를 대상으로 한다.
+Initial 18 Case는 fixture/closed-loop Coverage에 남고 ADR-0011 의미 회귀를 검증한다. M4 실제 반복 리포트는 `docs/archive/PROGRESS-team-2026.md`와 ADR-0021이 요구한 Post-Deploy 18 Case를 대상으로 한다.
 
 ### 3. Observation bundle은 private input, report는 sanitized output이다
 
@@ -71,7 +71,7 @@ Sanitized report에는 per-case/per-perspective/전체 정확도, Evidence 정�
 - 실제 자격 증명 없이도 validator와 dry-run을 구현·검증할 수 있지만 release PASS 증적은 만들 수 없다.
 - 18 Case를 모두 Bedrock 호출하지 않아 ADR-0011의 AI/Code 경계를 지키고 호출 수·비용을 과대 계상하지 않는다.
 - 공개 report만으로 raw 결과를 재구성할 수 없으므로 보호 저장소의 private bundle과 run 기록을 release reviewer가 함께 확인해야 한다.
-- A/D producer가 필드 이름이나 digest 대상을 변경하려면 이 ADR과 `docs/CONTRACTS.md`, parser/test를 같은 변경에서 갱신한다.
+- A/D producer가 필드 이름이나 digest 대상을 변경하려면 이 ADR과 `docs/design/CONTRACTS.md`, parser/test를 같은 변경에서 갱신한다.
 
 ## Rejected alternatives
 

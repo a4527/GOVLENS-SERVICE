@@ -19,7 +19,7 @@ from packages.contracts import (
     PolicySourceUploadRequest,
 )
 
-INGESTION_DOC = Path(__file__).parents[2] / "docs" / "POLICY_INGESTION.md"
+INGESTION_DOC = Path(__file__).parents[2] / "docs" / "design" / "POLICY_INGESTION.md"
 
 UNIT = NormalizedDocumentUnit(
     locator="heading/access-control/item/1",
@@ -63,7 +63,7 @@ def _document(**overrides: object) -> NormalizedPolicyDocument:
 
 class FormatAllowListContractTest(unittest.TestCase):
     def test_the_allow_list_matches_the_documented_format_policy(self) -> None:
-        """Contract와 `docs/POLICY_INGESTION.md`가 같은 형식 목록을 말해야 한다."""
+        """Contract와 `docs/design/POLICY_INGESTION.md`가 같은 형식 목록을 말해야 한다."""
         section = INGESTION_DOC.read_text(encoding="utf-8").split("## Format policy", 1)[1]
         section = section.split("\n## ", 1)[0]
         documented = set()

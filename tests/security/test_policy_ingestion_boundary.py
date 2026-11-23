@@ -1,7 +1,7 @@
 """Security boundary tests for customer policy ingestion.
 
 두 가지를 고정한다. (1) 압축 폭탄과 과대 업로드가 읽히기 전에 거부된다. (2) 원문 문장이
-Contract 직렬화, 실패 코드, 오류 메시지 어디에도 나타나지 않는다 (`docs/POLICY_INGESTION.md`
+Contract 직렬화, 실패 코드, 오류 메시지 어디에도 나타나지 않는다 (`docs/design/POLICY_INGESTION.md`
 Acceptance criteria: "정책 원문이나 추출 텍스트가 Git diff, Queue payload, 운영 로그에
 노출되지 않는다").
 """

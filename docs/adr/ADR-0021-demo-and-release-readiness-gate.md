@@ -73,10 +73,10 @@ M4 Exit criteria는 "WordPress/LAMP Demo에서 폐루프 E2E가 재현되고, �
 - Golden Dataset 반복 평가 리포트와 목표 대비 결과 (2번)
 - 관측·비용 기록 (3번)
 - Secret scan과 Python/Frontend/Terraform 검증 결과
-- 문서 Freshness 확인: `docs/PRD.md`, `docs/DESIGN.md`, `docs/API.md`, `docs/CONTRACTS.md`,
-  `docs/DATABASE.md`, `docs/architecture/`, `docs/decisions/`가 구현과 일치하고 `Proposed` ADR이
+- 문서 Freshness 확인: `docs/PRD.md`, `docs/DESIGN.md`, `docs/design/API.md`, `docs/design/CONTRACTS.md`,
+  `docs/design/DATABASE.md`, `docs/design/architecture/`, `docs/adr/`가 구현과 일치하고 `Proposed` ADR이
   남아 있지 않음
-- `PROGRESS.md`의 M0–M3 Exit criteria 충족 상태
+- `docs/archive/PROGRESS-team-2026.md`의 M0–M3 Exit criteria 충족 상태
 
 ## Consequences
 

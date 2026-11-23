@@ -1,6 +1,6 @@
 """XLSX and DOCX parsers built on `zipfile` and `xml.etree`. No third-party runtime.
 
-Backend는 서드파티 런타임 의존성이 없는 ZIP Lambda로 배포된다 (`docs/POLICY_INGESTION.md`
+Backend는 서드파티 런타임 의존성이 없는 ZIP Lambda로 배포된다 (`docs/design/POLICY_INGESTION.md`
 Format policy). openpyxl/python-docx를 쓰지 않는 이유는 취향이 아니라 배포 구조다.
 
 `scripts/policy_source_digest.py`의 XLSX 원형이 다루지 못하던 세 가지를 여기서 처리한다:

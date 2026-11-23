@@ -1,6 +1,6 @@
 """Customer-scoped, read-only DynamoDB adapter for the Policy Catalog.
 
-Key layout는 `docs/DATABASE.md`의 item layout을 따른다.
+Key layout는 `docs/design/DATABASE.md`의 item layout을 따른다.
 
 - Policy profile: `PK=CUSTOMER#{customer_id}`, `SK=POLICY_PROFILE#{policy_profile_id}`
 - Policy source:  `PK=CUSTOMER#{customer_id}`, `SK=POLICY_SOURCE#{source_id}#VERSION#{version}`

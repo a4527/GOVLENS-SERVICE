@@ -8,7 +8,7 @@
 > Boundary: “임의 문서”는 아래 allow-list의 지원 형식과 현재 Governance Control Catalog 범위 안을
 > 뜻한다. `policies-local/`과 `fixtures/rules/`는 개발 seed일 뿐 고객 업로드를 대체하지 않는다.
 >
-> Decision record: `docs/decisions/ADR-0015-customer-policy-ingestion.md`
+> Decision record: `docs/adr/ADR-0015-customer-policy-ingestion.md`
 
 ## Goal
 
@@ -244,7 +244,7 @@ B가 문서 의미와 승인 경계를 소유하지만, public upload와 저장 
 
 ## Required public/API boundary
 
-구현 전 `docs/API.md`와 `packages/contracts/`에 최소 다음 기능의 wire shape를 확정한다.
+구현 전 `docs/design/API.md`와 `packages/contracts/`에 최소 다음 기능의 wire shape를 확정한다.
 
 1. 고객 Scope가 고정된 Policy Source upload session 생성
 2. 업로드 완료 확인과 비동기 validation/parsing 시작
@@ -323,7 +323,7 @@ Rule이 인용한 Source의 승인 record로 판정하므로 문서 수와 무�
 세어진다: 기준선은 점수를 만드는 것이 아니라 심사원이 검토할 좌표를 만든다.
 
 게시된 Profile은 `segments`에 원본 구분을 기록한다. 보고 단계는 그것으로 준비도를 사내 정책과
-ISMS-P로 나눈다 — **두 점수를 하나로 합치지 않는다**(`docs/CONTRACTS.md`,
+ISMS-P로 나눈다 — **두 점수를 하나로 합치지 않는다**(`docs/design/CONTRACTS.md`,
 `SegmentReadinessScore`). 모든 Rule의 모든 인용 Source를 이름 붙일 수 있을 때만 Segment를
 만든다. 절반만 분류된 Profile은 나머지를 어느 점수에 넣을지 답할 수 없고, 그 상태로 나눈
 점수는 조용히 일부를 빠뜨린 값이다.
@@ -366,5 +366,5 @@ Rule들을 실제 평가 경계로 만드는 것은 Profile publication이다. P
 - [x] 정책 원문이나 추출 텍스트가 Git diff, Queue payload, 운영 로그에 노출되지 않는다.
       (Contract가 텍스트를 담을 수 없고, `tests/security/test_policy_ingestion_boundary.py`가
       직렬화·실패 코드·오류 메시지에 원문이 없음을 고정한다.)
-- [ ] 구현 PR에서 `docs/architecture/C4-CONTAINER.md`에 업로드/Parser/정규화 Artifact 경로를
+- [ ] 구현 PR에서 `docs/design/architecture/C4-CONTAINER.md`에 업로드/Parser/정규화 Artifact 경로를
       반영한다. 계획 단계인 지금은 `docs/DESIGN.md` flow만 갱신하고 C4는 의도적으로 미룬다.

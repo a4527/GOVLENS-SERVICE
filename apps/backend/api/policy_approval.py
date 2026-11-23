@@ -76,7 +76,7 @@ class PolicyApprovalApiService:
 
         `approved_rules`는 사람이 검토해 승인하기로 고른 `(rule_id, version)` 목록이다. AI 추출
         후보 전량이 아니라 이 부분집합만 `approve_source()`에 넘겨야, 후보 저장(C)과 사람 승인(A)
-        사이의 검토 게이트가 형식으로 남지 않는다(`docs/POLICY_INGESTION.md` 인수 조건 4, 150행).
+        사이의 검토 게이트가 형식으로 남지 않는다(`docs/design/POLICY_INGESTION.md` 인수 조건 4, 150행).
         목록에 없는 후보는 CANDIDATE로 남고 Profile·Assessment에 들어가지 않는다.
         """
         if not isinstance(principal, Principal):

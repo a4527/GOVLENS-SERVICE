@@ -3,7 +3,7 @@
 These Protocols are the seam between A/C (who orchestrate and evaluate) and
 D (who runs Terraform and calls GitHub). They are frozen here first, ahead of D's
 live adapters, so A and C can build against Protocols and fixtures in parallel
-rather than waiting for D's implementation (PROGRESS.md M3 ordering). D owns the
+rather than waiting for D's implementation (docs/archive/PROGRESS-team-2026.md M3 ordering). D owns the
 concrete adapters; A/C only depend on these signatures.
 
 Every method returns a `packages.contracts` value type so no role imports across

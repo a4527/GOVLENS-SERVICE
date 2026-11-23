@@ -119,17 +119,27 @@ kosa-aws-1/
 ### Backend (Python) 부트스트랩
 
 ```bash
-python3 -m pip install -r requirements-dev.txt -r apps/backend/requirements.txt
-
-# M0 검증
-python3 -m unittest discover --start-directory tests/unit --pattern 'test_*.py' --verbose
-python3 -m unittest discover --start-directory tests/contract --pattern 'test_*.py' --verbose
-python3 -m unittest discover --start-directory tests/security --pattern 'test_*.py' --verbose
+uv venv .venv   # 시스템 Python에 ensurepip이 있으면 python3 -m venv .venv 도 가능
+uv pip install --python .venv/bin/python -r requirements-dev.txt -r apps/backend/requirements.txt
 
 # 린트
-python3 -m ruff check .
-python3 -m ruff format --check .
+.venv/bin/python -m ruff check .
+.venv/bin/python -m ruff format --check .
 ```
+
+테스트 명령은 아래 [테스트 · CI](#테스트--ci)를 참고하세요.
+
+### 비밀값과 커밋 전 검사
+
+`.env`는 로컬 전용이며 Git에서 제외합니다. 변수 이름과 안전한 예시는 [.env.example](.env.example)을 따릅니다.
+
+[Gitleaks](https://github.com/gitleaks/gitleaks#installing)를 설치하거나 실행 파일을 `.tools/gitleaks`에 둡니다. Gitleaks가 없으면 커밋과 push가 차단됩니다. 저장소를 받은 뒤 한 번 훅을 켭니다.
+
+```bash
+git config --local core.hooksPath .githooks
+```
+
+커밋 훅은 민감한 파일명과 스테이징된 비밀값을, push 훅은 추적 중인 민감 파일명과 Git 전체 이력을 검사합니다. 과거 이력의 확인된 오탐은 `.gitleaksignore`에 이유와 함께 등록합니다. GitHub에서는 pull request마다 `.github/workflows/secret-scan.yml`이 같은 검사를 실행합니다.
 
 ### Frontend
 
@@ -150,12 +160,18 @@ npm run build    # 프로덕션 빌드
 | --- | --- |
 | [PRD](docs/PRD.md) | 제품 가치, 사용자, MVP 범위, 평가 의미 |
 | [DESIGN](docs/DESIGN.md) | 아키텍처, AWS, 보안, 워크플로, 관측성 |
-| [API](docs/API.md) | HTTP API와 오류 형식 |
-| [CONTRACTS](docs/CONTRACTS.md) | 도메인 / structured-output 스키마 |
-| [DATABASE](docs/DATABASE.md) | DynamoDB / S3 Artifact 모델과 접근 패턴 |
-| [decisions/](docs/decisions/) | 장기 기술 결정(ADR)과 이유 |
-| [CONTRIBUTING](CONTRIBUTING.md) | 브랜치, PR, 리뷰, Done, 문서 Freshness |
-| [PROGRESS](PROGRESS.md) | 팀 진행 현황·의존성·차단 사항 |
+| [API](docs/design/API.md) | HTTP API와 오류 형식 |
+| [CONTRACTS](docs/design/CONTRACTS.md) | 도메인 / structured-output 스키마 |
+| [DATABASE](docs/design/DATABASE.md) | DynamoDB / S3 Artifact 모델과 접근 패턴 |
+| [design/](docs/design/) | 위 상세 설계와 정책 수집 경계, 이름 규칙, C4 다이어그램 |
+| [sandbox/](docs/sandbox/) · [demo/](docs/demo/) | 고객 sandbox 연동 절차와 데모 실행 런북 |
+| [evaluations/](docs/evaluations/) | 평가 품질 측정, 모델 선택, release gate |
+| [DECISIONS](docs/DECISIONS.md) · [adr/](docs/adr/) | 결정 목록과 장기 기술 결정(ADR)의 이유 |
+| [TASKS](docs/TASKS.md) · [PROGRESS](docs/PROGRESS.md) | 남은 작업과 현재 진행 상태 |
+| [CHANGELOG](docs/CHANGELOG.md) · [worklogs/](docs/worklogs/) | 변경 이력과 날짜별 작업·검증 기록 |
+| [CONTRIBUTING](CONTRIBUTING.md) | 브랜치, PR, 커밋, 릴리스 게이트 |
+
+작업별로 어떤 문서를 읽고 어디에 기록하는지는 [AGENTS.md](AGENTS.md)의 문서 책임 표가 기준입니다. 팀 프로젝트 기간(~2026-09)의 진행 기록은 [docs/archive/](docs/archive/)에 보존합니다.
 
 ---
 
@@ -203,7 +219,7 @@ npm run build    # 프로덕션 빌드
 | `GET` `POST` `DELETE` | `/admin/users` | Admin 전용 사용자 관리 |
 | `GET` | `/audit-events` | Admin 전용 감사 이력 조회 |
 
-전체 목록·요청/응답 형식·페이지네이션·오류 규약은 [docs/API.md](docs/API.md)를 참고하세요.
+전체 목록·요청/응답 형식·페이지네이션·오류 규약은 [docs/design/API.md](docs/design/API.md)를 참고하세요.
 
 ### 오류 형식
 
@@ -259,10 +275,9 @@ Assessment는 하나의 이벤트가 아니라 단계로 나뉩니다.
 테스트는 계층별로 나뉩니다.
 
 ```bash
-python3 -m unittest discover --start-directory tests/unit --pattern 'test_*.py'
-python3 -m unittest discover --start-directory tests/contract --pattern 'test_*.py'
-python3 -m unittest discover --start-directory tests/integration --pattern 'test_*.py'
-python3 -m unittest discover --start-directory tests/security --pattern 'test_*.py'
+for layer in unit contract integration security; do
+  .venv/bin/python -m unittest discover --start-directory tests/$layer --pattern 'test_*.py'
+done
 ```
 
 | 계층 | 검증 대상 |
@@ -272,27 +287,29 @@ python3 -m unittest discover --start-directory tests/security --pattern 'test_*.
 | `integration` | 여러 컴포넌트 결합 |
 | `security` | IAM·route allow-list·scope 경계 회귀 |
 
-GitHub Actions 워크플로(`.github/workflows/`)가 Python 검사, CloudFormation lint, frontend 검사, secret scan, PR source gate를 실행합니다. 모든 PR은 secret scan과 source gate를 통과해야 합니다.
+`main` 대상 PR마다 GitHub Actions 워크플로(`.github/workflows/`)가 Python 검사, CloudFormation lint, frontend 빌드, Lambda 패키지, secret scan, PR source gate를 실행합니다. 모든 PR은 secret scan과 source gate를 통과해야 합니다.
 
 ---
 
 ## 개발 규칙
 
-- 작업 브랜치는 최신 `dev`에서 만들고, 일반 PR의 base는 `dev`입니다.
-- `main` 직접 push와 개발 중 `main` 대상 PR은 금지합니다.
+1인 개인 프로젝트로 운영합니다([DEC-0028](docs/DECISIONS.md#dec-0028)).
+
+- `main`에서 `feature/`·`fix/`·`docs/`·`refactor/`·`test/`·`chore/` 작업 브랜치를 만들고 `main`으로 PR을 열어 CI 통과 후 병합합니다. 상세는 [CONTRIBUTING](CONTRIBUTING.md).
 - 정책 원문은 저장소에 커밋하지 않습니다. 저장소에는 Rule 정의와 `SourceReference` locator만 둡니다.
 - AWS Resource Tool은 읽기 전용입니다. 실제 인프라 변경은 승인된 `commit_sha`·`plan_hash` 검증 뒤 Human Approval과 GitHub Actions를 통해서만 수행합니다.
-- 역할 경계를 넘는 API·Schema 변경은 해당 Contract의 Producer/Consumer Owner가 검토합니다.
+- 영역 경계를 넘는 API·Schema 변경은 `packages/contracts/`와 Contract Test를 같은 변경에서 갱신합니다.
 
-### 개발 역할
+### 구성 요소 영역
 
-| 역할 | 책임 |
+코드와 ADR은 팀 프로젝트 기간의 역할 이름(A–D)을 영역 이름으로 그대로 씁니다.
+
+| 영역 | 책임 |
 | --- | --- |
 | **A — Platform/Backend** | 플랫폼 기반, 사용자, API, durable workflow state |
 | **B — Policy/Governance Boundary** | 정책 문서 형식, Rule Registry/Profile/Context, remediation 허용 범위 |
 | **C — AI Evaluation & Agent Orchestration** | Assessment/Remediation Agent, 평가 품질·evidence orchestration |
 | **D — Integration & Deployment Execution** | GitHub/AWS Tool, Terraform Plan/Apply, Deployment Worker |
-| **Shared** | Contracts, Integration Test, C4/ADR, E2E |
 
 ---
 

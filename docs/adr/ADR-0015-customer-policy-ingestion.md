@@ -31,7 +31,7 @@ signature/MIME/크기/보안 검증, 형식별 Parser, 공통 Policy Document �
   암호화·손상 문서, 텍스트를 추출할 수 없는 문서는 `REVIEW_REQUIRED` 또는 `FAILED`로 종료한다.
   "모든 형식을 읽는다"고 가정하지 않는다.
 - 지원 형식은 서드파티 런타임 의존성 없이 처리할 수 있고 추출기 근거가 있는 형식으로 한정한다.
-  구체 목록은 `docs/POLICY_INGESTION.md`의 allow-list가 정본이다.
+  구체 목록은 `docs/design/POLICY_INGESTION.md`의 allow-list가 정본이다.
 - 형식별 Parser는 형식과 무관한 stable locator를 갖는 공통 Normalized Policy Document를 생성한다.
   Evidence 추적성은 이 locator와 content hash 위에서 유지된다 (ADR-0004의 추적성 요구 계승).
 - 사람이 승인한 정확한 Source version에서 생성된 Rule만 Policy Profile이 참조할 수 있다.
@@ -50,7 +50,7 @@ signature/MIME/크기/보안 검증, 형식별 Parser, 공통 Policy Document �
 - `policies-local/`과 `fixtures/rules/`는 이 경계를 개발·검증하기 위한 seed로만 유지한다.
 
 세부 workflow, 형식 정책, 정규화 Contract, 보안 기준, 역할 분담과 인수 조건은
-`docs/POLICY_INGESTION.md`를 정본으로 한다.
+`docs/design/POLICY_INGESTION.md`를 정본으로 한다.
 
 ## Consequences
 
@@ -72,4 +72,4 @@ Rule 후보를 AI가 생성하더라도 사람 승인 없이는 Profile에 들�
 - Blocks: Parser Adapter 구현 범위, 정규화 Contract 필드
 - Final record (2026-08-31): 지원 형식은 Markdown, Plain text, CSV, XLSX, DOCX다. 모두 표준
   라이브러리만으로 처리되고, Markdown·XLSX는 현재 Policy Source 2건의 형식이며 DOCX는 XLSX와
-  같은 OOXML zip 기법을 재사용한다. 목록은 `docs/POLICY_INGESTION.md`가 정본이다.
+  같은 OOXML zip 기법을 재사용한다. 목록은 `docs/design/POLICY_INGESTION.md`가 정본이다.

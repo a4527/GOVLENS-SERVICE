@@ -2,7 +2,7 @@
 
 이 runbook은 WordPress/LAMP 데모에서 폐루프 E2E를 한 번 재현하는 절차와, 그 실행에서 남겨야
 하는 관측·비용 증적을 정의한다. 데모 IaC의 위치와 데모 토글 매핑은
-`docs/M4-DEMO-IAC-REFERENCE.md`가 정본이다.
+`docs/demo/M4-DEMO-IAC-REFERENCE.md`가 정본이다.
 
 이 문서는 로컬 AWS 명령이나 직접 프로덕션 접근을 승인하지 않는다. apply는 데모 저장소에 설치된
 protected GitHub Actions workflow를 통해서만 일어나고, Platform은 그 workflow를
@@ -12,7 +12,7 @@ protected GitHub Actions workflow를 통해서만 일어나고, Platform은 그 
 
 데모 실행 전에 아래가 모두 준비돼 있어야 한다. 하나라도 비면 데모를 시작하지 않는다.
 
-- 데모 저장소가 `docs/M4-DEMO-IAC-REFERENCE.md` §2의 전제조건(version pin, workflow 설치,
+- 데모 저장소가 `docs/demo/M4-DEMO-IAC-REFERENCE.md` §2의 전제조건(version pin, workflow 설치,
   protected Environment, OIDC Role 분리, state backend/lock)을 갖춘다.
 - Platform의 Deployment 생성·상태·검증 조회 endpoint가 배선돼 있다(A 소유, ADR-0019 §4,
   ADR-0020 §7). 없으면 승인 화면이 `commit_sha`/`plan_hash`를 얻을 수 없다.
@@ -31,7 +31,7 @@ Event마다 revision이 오르고, Platform은 Event를 신뢰하지 않고 `run
 
 ### 1-1. Initial Assessment (위반 상태)
 
-- 데모 저장소의 여섯 토글을 위반 상태(`false`)로 둔 채(`docs/M4-DEMO-IAC-REFERENCE.md` §3에서
+- 데모 저장소의 여섯 토글을 위반 상태(`false`)로 둔 채(`docs/demo/M4-DEMO-IAC-REFERENCE.md` §3에서
   데모용으로 지정한 조합) default branch에 commit한다.
 - 그 commit에 대해 Initial Assessment를 시작한다. 여섯 S3 Rule × 세 관점(IAC/AWS_ACTUAL/DRIFT)의
   Finding·Evidence·Coverage·Readiness Score를 조회한다.
@@ -176,9 +176,9 @@ payload는 `deployment_id`, `commit_sha`, `plan_hash`, `run_id`, `conclusion`만
 
 ## 관련 문서
 
-- 데모 IaC 참조·데모 토글: `docs/M4-DEMO-IAC-REFERENCE.md`
+- 데모 IaC 참조·데모 토글: `docs/demo/M4-DEMO-IAC-REFERENCE.md`
 - workflow template과 경계: `ci/terraform/README.md`
 - 릴리스 gate 첨부물: `CONTRIBUTING.md`의 "Release gate (`dev → main`)"
-- 결정: `docs/decisions/ADR-0019-approved-deployment-execution-boundary.md`,
-  `docs/decisions/ADR-0020-post-deploy-verification-and-comparison.md`,
-  `docs/decisions/ADR-0021-demo-and-release-readiness-gate.md`
+- 결정: `docs/adr/ADR-0019-approved-deployment-execution-boundary.md`,
+  `docs/adr/ADR-0020-post-deploy-verification-and-comparison.md`,
+  `docs/adr/ADR-0021-demo-and-release-readiness-gate.md`

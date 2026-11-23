@@ -1,6 +1,6 @@
 """Deterministic DRIFT derivation from the IAC and AWS_ACTUAL perspectives.
 
-`docs/API.md` requires an Initial Assessment to distinguish `IAC`, `AWS_ACTUAL`, and
+`docs/design/API.md` requires an Initial Assessment to distinguish `IAC`, `AWS_ACTUAL`, and
 `DRIFT` for the same managed target, and ADR-0011 defines `DRIFT` as the mismatch
 between the approved IaC and the live AWS Actual state.
 

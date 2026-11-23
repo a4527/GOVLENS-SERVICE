@@ -229,12 +229,12 @@ patch 생성. **안 되는 것**: (2/3) 업로드로 정책/Profile 만들기, (
   `POST /policy-profiles`로 가면 후보가 없어 `EMPTY_PROFILE`로 거부된다.
 - **원인:** 승인 read(`load_review`/`load_publication`)는 `#CANDIDATES` item에서 후보를 읽는데,
   그 후보를 저장하는 `record_candidate_extraction` 호출자(= C의 **AI 후보 추출 실행자**)가
-  아직 배선되지 않았다(API.md, `docs/POLICY_INGESTION.md`). 업로드한 정책 원문에서 Control/Rule
+  아직 배선되지 않았다(API.md, `docs/design/POLICY_INGESTION.md`). 업로드한 정책 원문에서 Control/Rule
   후보를 뽑아 저장하는 실행 경로가 없다.
 - **해야 할 일:** 정규화된 Policy Document → Bedrock으로 Control/Rule 후보 추출 →
   `record_candidate_extraction`으로 `#CANDIDATES`에 저장하는 실행자를 구현·배선. 그 뒤 `/approve`가
   후보 부분집합을 승인하고 `POST /policy-profiles`가 승인된 Rule로 versioned Profile을 게시한다.
-- **선행/제약:** `docs/POLICY_INGESTION.md`의 지원 문서 형식 allow-list만 처리(목록 밖 형식 코드 추가
+- **선행/제약:** `docs/design/POLICY_INGESTION.md`의 지원 문서 형식 allow-list만 처리(목록 밖 형식 코드 추가
   금지). 후보는 사람 승인 없이는 Profile에 못 들어간다(ADR-0015). 형식 추가 시 문서+Contract 동시 갱신.
 - **현재 우회:** 업로드 없이 fixture Profile `profile-mvp-baseline`을 assessment에 선택하면 평가/finding/
   remediation은 그대로 테스트된다. "관리자가 자기 정책 문서를 올려 Profile을 만드는" 경로만 미완이다.
@@ -321,7 +321,7 @@ patch 생성. **안 되는 것**: (2/3) 업로드로 정책/Profile 만들기, (
   infrastructure/cloudformation/m1-customer-bootstrap-roles.yaml --capabilities CAPABILITY_NAMED_IAM
   --profile mfa --region us-east-1`로 적용한다. 그 뒤 위 `gh workflow run`을 다시 dispatch한다(Secret은 이미 새 형식).
 - 재배포 뒤 확인 순서: `POST /orchestrate` 200 → `GET /deployments/{id}`에 `verification_assessment_id` →
-  remediation 후 `awsproject-team1/test`에 PR. 시연 순서는 `docs/M4-DEMO-RUNBOOK.md` §4.
+  remediation 후 `awsproject-team1/test`에 PR. 시연 순서는 `docs/demo/M4-DEMO-RUNBOOK.md` §4.
 - **시연 직전 1시간 안에** GitHub App installation token을 재발급해 `kosa-governance-sandbox/m1/github-token`에
   넣는다(§2). 만료 token이면 PR write와 commit 해석이 provider error로 실패한다.
 

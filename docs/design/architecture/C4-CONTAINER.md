@@ -26,7 +26,7 @@
   만든다. 추출 텍스트는 정규화 Artifact에만 존재하고 Queue/DynamoDB에는 hash만 흐른다.
   `DynamoDbPolicySourceUploadRepository`가 server-issued upload session, exact S3 version
   finalization, normalized Artifact와 customer-scoped ingestion state write를 담당한다. public
-  API Gateway/async dispatcher는 아직 이 경계에 연결되지 않았다 (`docs/POLICY_INGESTION.md`).
+  API Gateway/async dispatcher는 아직 이 경계에 연결되지 않았다 (`docs/design/POLICY_INGESTION.md`).
 - DynamoDB/S3: 상태·메타데이터 및 Artifact 저장
 - CloudWatch/CloudTrail: 운영·감사 관측
 - GitHub App/Actions: Customer IaC PR, OIDC plan/apply

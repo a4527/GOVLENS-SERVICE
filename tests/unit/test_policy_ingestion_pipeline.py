@@ -237,7 +237,7 @@ class SourceReferenceBridgeTest(unittest.TestCase):
             source_reference_for(document, "heading/does-not-exist")
 
     def test_refuses_to_cite_a_document_awaiting_review(self) -> None:
-        """사람 승인 전 Source는 Rule의 근거가 될 수 없다 (`docs/POLICY_INGESTION.md`)."""
+        """사람 승인 전 Source는 Rule의 근거가 될 수 없다 (`docs/design/POLICY_INGESTION.md`)."""
         payload = b"Accounts must use least privilege.\n"
         document = normalize_upload(_original(payload, media_type="text/plain"), payload).document
 

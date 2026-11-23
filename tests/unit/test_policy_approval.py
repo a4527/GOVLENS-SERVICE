@@ -639,7 +639,7 @@ class PublishedProfileReachesAssessmentTest(unittest.TestCase):
         self.assertTrue(context.allows_evidence(f"{SOURCE_ID}@{SOURCE_VERSION}#{PUBLIC_LOCATOR}"))
 
     def test_an_unapproved_rule_never_reaches_a_policy_context(self) -> None:
-        """`docs/POLICY_INGESTION.md`: 사람 승인 전 Rule은 Profile 및 Assessment Context에
+        """`docs/design/POLICY_INGESTION.md`: 사람 승인 전 Rule은 Profile 및 Assessment Context에
         들어가지 않는다. Profile allow-list가 유일한 진입 경로이므로, Catalog에 Rule이 있어도
         Profile이 참조하지 않으면 Context에 들어올 수 없다."""
         candidate = _candidate(self.document, ENCRYPT_LOCATOR, rule_id="S3-ENCRYPT-999")

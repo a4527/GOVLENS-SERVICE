@@ -21,7 +21,7 @@
 
 CloudFormation receives `ProjectName` and `Environment` parameters and derives the deployed
 table name as `<project>-<env>-metadata`. The repository never hard-codes the official
-project name; validation restricts the two parameters to the naming rule in `docs/NAMING.md`.
+project name; validation restricts the two parameters to the naming rule in `docs/design/NAMING.md`.
 
 ## Primary key model
 
@@ -351,7 +351,7 @@ bucket/key is exposed through the public transport contract.
 분리한다. Policy ingestion metadata는 원본 파일명, 선언/탐지 media type, byte size, parser
 ID/version, 처리 상태, 원본·정규화 Artifact ID/hash, warning/error code를 고객 partition에
 저장한다. 새 Source version은 기존 Artifact를 덮어쓰지 않으며, 승인 전에는 Policy Profile이
-참조할 수 없다. 상세 lifecycle과 보안 경계는 `docs/POLICY_INGESTION.md`를 따른다.
+참조할 수 없다. 상세 lifecycle과 보안 경계는 `docs/design/POLICY_INGESTION.md`를 따른다.
 
 Ingestion 레코드의 SK prefix는 `POLICY_INGESTION`이다. 별도 ingestion ID를 두지 않고
 `POLICY_INGESTION#{source_id}#VERSION#{version}`으로 `POLICY_SOURCE` 항목과 같은

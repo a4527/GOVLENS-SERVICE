@@ -314,7 +314,7 @@ class DynamoDbPolicySourceUploadRepository:
         """Return a summary of every policy source version the caller's customer owns.
 
         Tenant-scoped by construction: the query key is the caller's own partition, and the
-        caller never chooses it (docs/POLICY_INGESTION.md security boundary). Only summary
+        caller never chooses it (docs/design/POLICY_INGESTION.md security boundary). Only summary
         metadata is returned — never units, normalized text, or the original bytes.
         """
         items: list[dict[str, object]] = []

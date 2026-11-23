@@ -10,4 +10,4 @@ DynamoDB는 Job/Workflow/Domain Metadata와 상태 전이를 저장하고, S3는
 
 ## Consequences
 
-테이블 수, PK/SK, GSI, TTL, 보존 기간, 테넌트 격리 키와 접근 패턴은 구현 전 `docs/DATABASE.md`에서 확정한다. S3 Artifact는 직접 공개하지 않고 Scope 검증을 거쳐 접근한다.
+테이블 수, PK/SK, GSI, TTL, 보존 기간, 테넌트 격리 키와 접근 패턴은 구현 전 `docs/design/DATABASE.md`에서 확정한다. S3 Artifact는 직접 공개하지 않고 Scope 검증을 거쳐 접근한다.

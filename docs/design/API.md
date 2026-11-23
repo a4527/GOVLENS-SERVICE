@@ -66,7 +66,7 @@ Profile 게시(`/policy-profiles`)가 API Gateway 라우트와 Lambda compositio
 (`apps/backend/api/runtime.py`)에 배선돼 노출된다. 후보를 저장하는 경로는 Policy Authoring
 Worker이며(ADR-0023), 승인·게시의 검토 read는 **READY authoring manifest**가 선언한 후보만
 읽는다 — 일부만 쓰인 후보 집합을 완전한 것으로 읽으면 승인 경계가 형식이 된다. 상세 workflow와
-인수 조건은 `docs/POLICY_INGESTION.md`를 따른다.
+인수 조건은 `docs/design/POLICY_INGESTION.md`를 따른다.
 
 | Method | Path | Status | Purpose |
 | --- | --- | --- | --- |
@@ -118,7 +118,7 @@ Control과 실행 유형, evidence capability, 그리고 **서버가 만든** lo
 승인과 Profile 게시는 서로 다른 operation이다. `/approve`는 body로 승인할 Rule 목록
 (`{"approved_rules": [{"rule_id", "version"}, ...]}`)을 받아 그 부분집합만 확정한다 — 리뷰어가
 추출 후보 6건 중 4건만 고를 수 있어야 하므로, AI 후보 전량에 서명을 찍지 않는다
-(`docs/POLICY_INGESTION.md` 인수 조건 4). 목록에 없는 후보는 CANDIDATE로 남는다. Profile 게시가
+(`docs/design/POLICY_INGESTION.md` 인수 조건 4). 목록에 없는 후보는 CANDIDATE로 남는다. Profile 게시가
 그 승인된 Rule들을 평가 경계로 만든다. 게시는 승인되지 않은 Source·Rule을
 참조하거나 승인된 것과 다른 Source version을 가리키는 Profile을 거부한다. 두 단계를 하나의
 operation으로 합치더라도 이 거부 조건과 audit record 기록은 동일하게 적용한다.

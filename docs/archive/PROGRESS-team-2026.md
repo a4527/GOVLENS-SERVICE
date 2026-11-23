@@ -18,7 +18,7 @@
 
 - **경계를 의미로 다시 긋는다 — 사실·해석·모름 (2026-09-05, ADR-0024).** 바로 아래 항목이 만든
   결정적 판정은 옳았지만, 경계의 기준이 "Catalog가 술어를 선언했는가"라서 네 가지가 새어 나갔다.
-  전체 검토는 `docs/decisions/ADR-0024-scoring-boundary-by-meaning.md`.
+  전체 검토는 `docs/adr/ADR-0024-scoring-boundary-by-meaning.md`.
   - **근거 없는 PASS를 닫았다.** `missing_required_evidence()`는 binding 미선언 capability를
     `continue`로 건너뛰고 모델을 불렀다. baseline S3 Rule 넷(ACL·Bucket Policy·TLS·Logging)은
     S3 read 문서에 답이 존재할 수 없는데 모델이 public-access-block 플래그를 대신 인용하며 PASS를
@@ -54,7 +54,7 @@
     AWS/HYBRID를 지원하고, Catalog 테스트가 "AWS를 지원한다고 선언한 Control은 AWS 근거를 갖는다"를
     고정한다. dry-run: **14 CODE / 10 MODEL, Bedrock 호출 20회**(원래 48). 모델에 남은 AWS 좌표는
     EC2 공인 IP 둘뿐이며 의도된 것이다("private tier인가"는 해석) — 이제 그 해석에 필요한 서브넷
-    사실이 문서에 있다. 고객 read Role에 새 action 넷이 필요하다(`docs/M1-SANDBOX-INTEGRATION.md`).
+    사실이 문서에 있다. 고객 read Role에 새 action 넷이 필요하다(`docs/sandbox/M1-SANDBOX-INTEGRATION.md`).
   - **plan은 사실이다 — 조치가 Finding을 실제로 고치는지 apply 전에 코드가 답한다 (ADR-0024 §E).**
     AWS capability의 술어를 terraform plan의 `after` 값에서 재사용할 위치를 Catalog가 선언하고
     (`plan_paths`, 결정적 capability 9개 중 SG ingress·logging을 뺀 7개), D의 plan port가 그
@@ -196,7 +196,7 @@
     해당 item locator와 `terraform:main.tf` anchor다. 문서 기반 평가는 동작한다.
   - **남은 운영 작업.** `kosa-governance-sandbox/m1/github-token`의 GitHub App installation
     token(1시간 만료)이 01:20 KST에 쓰인 뒤 만료돼 401이다. worker는 `LOAD_IAC`에서 죽는다.
-    재발급(private key 필요, `docs/SESSION-HANDOFF-2026-09-03.md` §2)이 없으면 라이브 평가는 여전히
+    재발급(private key 필요, `docs/archive/SESSION-HANDOFF-2026-09-03.md` §2)이 없으면 라이브 평가는 여전히
     실패한다. DLQ(assessment 4,633·remediation 824·authoring 13)는 sweeper 반복이 만든 쓰레기라
     비우는 것이 맞다. 판본 pin이 없는 legacy Assessment 5건(`profile-mvp-baseline@None`)은 backfill
     대상이다.
@@ -387,7 +387,7 @@
   - 신규 콘솔 API: `GET /policy-sources`(문서 목록), `DELETE /policy-sources/{sid}/versions/{ver}`
     (미승인만 삭제, 승인 문서는 409로 거부 — Profile evidence 보호), `GET /scope`,
     `POST/GET /admin/users`, `POST /admin/users/profile`(사용자별 Profile을 Cognito 표준 `profile`
-    속성에 저장). 신규 `Action.MANAGE_USERS`(Admin 전용). `docs/API.md`·`docs/CONTRACTS.md` 동기화.
+    속성에 저장). 신규 `Action.MANAGE_USERS`(Admin 전용). `docs/design/API.md`·`docs/design/CONTRACTS.md` 동기화.
   - 콘솔 UX: 왼쪽 관측 패널에 LangGraph/Queue-Jobs에 더해 삭제 진행상황, "연결된 고객사 리소스"
     (repository_id + GitHub repo + AWS 계정), "사용자·지정 Profile"을 상시 표시. 다중 문서 후보를
     한 장바구니로 담아 단일 Profile 게시.
@@ -600,7 +600,7 @@
   (ADR-0018 조치 흐름의 **진입점**), `POST /deployments/{id}/approve`(M3 사람 승인 게이트),
   `GET /deployments/{id}/observability`. handler branch는 세 개 다 있는데 CloudFormation에 route가
   없었다. API Gateway는 명시적 allow-list이므로 **프로덕션에서는 조치를 시작할 수도, 배포를 승인할
-  수도 없는 상태였다.** 이 문서의 이전 판과 `docs/API.md`가 셋을 "배선됨/열었다"로 적고 있었으므로
+  수도 없는 상태였다.** 이 문서의 이전 판과 `docs/design/API.md`가 셋을 "배선됨/열었다"로 적고 있었으므로
   문서도 사실과 달랐다.
   - route 세 개를 선언하고, **회귀를 사람이 유지하는 목록에서 handler 파생으로 바꿨다.**
     기존 회귀는 route 이름과 key를 손으로 적은 목록이었고, handler에 branch가 늘어날 때 같이
@@ -658,7 +658,7 @@
     범위 Profile `profile-multiresource-baseline`을 새로 게시했다 — 구성은 **S3 6 + EC2 3 + RDS 4 +
     ALB 2 = 15 Rule**이며 EC2 3건은 기존 `EC2-EBS-ENCRYPT-001`을 포함한다.
     **승인된 `profile-mvp-baseline`(S3 6 Rule, `v2`)은 건드리지 않았다** — 승인 경계를 거치지 않은
-    Rule을 기존 Profile에 끼워 넣는 것은 `docs/POLICY_INGESTION.md`의 업로드→검증→승인 경계를
+    Rule을 기존 Profile에 끼워 넣는 것은 `docs/design/POLICY_INGESTION.md`의 업로드→검증→승인 경계를
     우회하는 것이다. 어느 Profile로 평가할지는 고객 승인 시점에 정한다.
     `scripts/policy_source_digest.py --verify`가 원문 보유 환경에서 2 sources / 21 references 일치.
     신규 8건 중 `RDS-PUBLIC-001`만 `AUTOMATIC`이다 — ADR-0017의 두 기준(Rule 하나가 준수를 유일하게
@@ -908,8 +908,8 @@
   private observation/sanitized report 경계는 ADR-0022(`Accepted`) 및 두 M4 runbook에 기록했다.
   실제 protected sandbox observation·관측/비용·demo run은 외부 승인 대기이며 fixture/dry-run을
   release evidence로 표시하지 않는다.
-- M4 D 데모 문서 몫(데모 IaC 참조·폐루프 runbook)을 최신 `dev`에 정합화했다. `docs/M4-DEMO-IAC-REFERENCE.md`·
-  `docs/M4-DEMO-RUNBOOK.md`가 병합된 dev의 실제 경계(`ci/terraform/` template, `agent/runtime/live_deployment_ports.py`,
+- M4 D 데모 문서 몫(데모 IaC 참조·폐루프 runbook)을 최신 `dev`에 정합화했다. `docs/demo/M4-DEMO-IAC-REFERENCE.md`·
+  `docs/demo/M4-DEMO-RUNBOOK.md`가 병합된 dev의 실제 경계(`ci/terraform/` template, `agent/runtime/live_deployment_ports.py`,
   `apps/backend/deployment/worker.py`, `packages/contracts/terraform_plan.py`)와 정합함을 재확인했다 — 6개 S3 Rule
   위반 토글 1:1 매핑이 `fixtures/rules/remediation.json` eligibility(AUTOMATIC=PUBLIC/ACL/TLS, MANUAL_ONLY=
   POLICY/ENCRYPT/LOGGING)·`rules.s3.json` version `2026-08-31`과 일치. PR #49 리팩터링(D port 파일 이동)은 문서
@@ -992,7 +992,7 @@
   before/after projection을 구현했고 36개(6 Rule × 3 perspective × Initial/Post-Deploy phase) Golden
   fixture gate를 확인했다.
   ADR-0019(승인 배포 실행 경계)를 `Accepted`로 확정했다(2026-09-02). A·D·Security가 서명 PR
-  리뷰 approve로 서명했고, 같은 PR에서 상태 전환과 `docs/API.md`·`CONTRACTS.md`·`DATABASE.md`·
+  리뷰 approve로 서명했고, 같은 PR에서 상태 전환과 `docs/design/API.md`·`CONTRACTS.md`·`DATABASE.md`·
   `DESIGN.md`·C4 계획 표기의 구현 표기 이관을 함께 커밋했다. 이 서명은 A(PR #40)와 D 조각이
   병렬로 base 삼도록 독립 PR로 분리했다. 이로써 M2 A audit 정본화, M2/M3 D live plan/apply,
   M3 A Deployment 생성·상태 API의 차단이 풀렸다.
@@ -1011,7 +1011,7 @@
 - 고객 사내 정책 수집 진행: B 소유 경계(형식 allow-list, 정규화 Schema, 5개 형식 Parser,
   승인 판정, Profile publication 거부 규칙) 구현 완료. Rule Registry와 `policies-local/`은
   여전히 개발 seed이며, 업로드 세션·저장·상태 write와 승인 API 배선(A), AI 후보 추출(C),
-  고객 간 격리·E2E 통합 테스트(Shared)가 `docs/POLICY_INGESTION.md`(ADR-0015) 기준으로 대기
+  고객 간 격리·E2E 통합 테스트(Shared)가 `docs/design/POLICY_INGESTION.md`(ADR-0015) 기준으로 대기
 - M2 A/B/C mockable flow 완료: A가 B `RemediationPolicy.decide()`를 호출해 decision/context/Job/
   Outbox/audit를 저장하고, C-owned revision-bound Remediation Worker가 injected Patch/Sync port로
   분기한다. D는 GitHub write 제안 경계(`ProposedPullRequest`)까지 완료했고, live GitHub/Terraform
@@ -1038,7 +1038,7 @@
   PolicyQA/ASSESSMENT/REMEDIATION/DEPLOYMENT로 라우팅(판단·제안만, 실행 권한 없음, ADR-0012). remediation
   outbox를 remediation 큐로 라우팅하는 dispatch 버그도 수정. 라이브 검증: assessment 18/18·findings 12,
   S3-PUBLIC IAC finding → decision TERRAFORM_PATCH → worker가 실제 patch(changed_paths=[main.tf],
-  base_commit 바인딩) 생성. 상세 인수인계와 계정·토큰·선행조건은 `docs/SESSION-HANDOFF-2026-09-03.md`.
+  base_commit 바인딩) 생성. 상세 인수인계와 계정·토큰·선행조건은 `docs/archive/SESSION-HANDOFF-2026-09-03.md`.
   Secret 값은 저장소에 두지 않으며, 실제 sandbox 버킷은 E2E용 insecure 상태라 복원이 필요하다.
 
 - 고객 sandbox Terraform component test: 별도 고객-owned 테스트 repository에 최소 secure S3
@@ -1060,9 +1060,9 @@
   Contract 136, Security 74, Integration 9, Ruff 275 files.
 
 - M4 D 데모 IaC 참조·시나리오와 폐루프 runbook 문서 완결 (ADR-0021 §1·§3): 데모 Terraform은 별도
-  고객 sandbox repository에 두고 이 저장소에는 참조만 남긴다는 결정에 따라, `docs/M4-DEMO-IAC-REFERENCE.md`
+  고객 sandbox repository에 두고 이 저장소에는 참조만 남긴다는 결정에 따라, `docs/demo/M4-DEMO-IAC-REFERENCE.md`
   (데모 저장소 식별자·전제조건, 6개 S3 Rule 1:1 위반 토글 매핑, 세 관점 재현)와
-  `docs/M4-DEMO-RUNBOOK.md`(Initial→Remediation/PR→plan→승인→apply→Post-Deploy Verification 폐루프,
+  `docs/demo/M4-DEMO-RUNBOOK.md`(Initial→Remediation/PR→plan→승인→apply→Post-Deploy Verification 폐루프,
   ADR-0020 재조회 시점 규칙, ADR-0021 §3 관측·비용 기록 표)를 추가했다. `fixtures/terraform/`은 비어
   있음을 유지하고 README로 이유·참조를 명시했다. runbook은 ci/terraform template·live 어댑터·
   `terraform_plan.py`의 실제 경계와 정합한다. 실제 데모 저장소 생성·sandbox 폐루프 실행·관측/비용
@@ -1124,7 +1124,7 @@
   병렬 진입할 수 있게 했다. (3) `DeploymentStatus`를 저장하지 않고 durable 사실에서 read 시 계산하는
   순수 함수 `derive_deployment_status()`(`DeploymentFacts` 입력)로 구현했다(ADR-0019 §8, 불변식 #9).
   (4) `Action`에 `START_DEPLOYMENT`(User)·`REJECT_DEPLOYMENT`(Admin), `AuditEventType`에
-  `DEPLOYMENT_REQUESTED`·`DEPLOYMENT_REJECTED`를 더했다. `docs/CONTRACTS.md`를 구현에 맞춰 동기화했고
+  `DEPLOYMENT_REQUESTED`·`DEPLOYMENT_REJECTED`를 더했다. `docs/design/CONTRACTS.md`를 구현에 맞춰 동기화했고
   ruff·Unit·Contract·Security·Integration 검증을 통과했다. A endpoint 배선은 Next다. 후속 PR 검토 대기
 - M3 B 조회 시점 억제의 미래 평가 시각 회귀 수정 (PR #47, `dev` 병합): 공용
   `select_in_force_exception()`이 `finding_evaluated_at > at`을 예외 선택 전에 fail-closed로
@@ -1169,10 +1169,10 @@
 - M1 A 승인 API 부분 승인 지원 (PR #44 리뷰 대응 1): `PolicyApprovalApiService.approve`가
   승인할 `approved_rules`(`(rule_id, version)` 목록)를 받아 `load_review` 후보 중 그 부분집합만
   골라 `approve_source()`에 넘긴다. 리뷰어가 추출 후보 전량이 아니라 일부만 승인할 수 있어야
-  검토 게이트가 형식으로 남지 않는다(`docs/POLICY_INGESTION.md` 인수 조건 4). handler는
+  검토 게이트가 형식으로 남지 않는다(`docs/design/POLICY_INGESTION.md` 인수 조건 4). handler는
   `POST .../approve` body(`{"approved_rules": [...]}`)를 파싱하고, 후보에 없는 Rule·빈 목록·중복은
   거부한다. B 순수 함수(`approve_source`)는 이미 "고른 것만 받는" 형태라 변경하지 않았다.
-  부분 승인·미존재 Rule 거부·빈 선택 거부 unit 테스트 추가. `docs/API.md` 갱신.
+  부분 승인·미존재 Rule 거부·빈 선택 거부 unit 테스트 추가. `docs/design/API.md` 갱신.
 
 - M1 A 승인·게시 API를 배포 Lambda에 배선: `runtime.py`의 `_http_handler`에
   `_policy_approval_components()`를 추가해 `PolicyApprovalApiService`(write는 low-level
@@ -1201,7 +1201,7 @@
   `load_review`가 읽음)와 `POLICY_SOURCE#{sid}#VERSION#{ver}`(`PolicySource`, `load_publication`이
   반환·대조). `POLICY_INGESTION` item이 `READY`이고 artifact 바인딩이 일치할 때만 저장해 추측
   저장을 막는다. `PolicySource`의 artifact 바인딩은 문서에서 유도하므로 승인 record 바인딩과
-  어긋날 수 없다. 원문·정규화 텍스트는 DynamoDB에 담지 않는다. `docs/DATABASE.md`에 candidate
+  어긋날 수 없다. 원문·정규화 텍스트는 DynamoDB에 담지 않는다. `docs/design/DATABASE.md`에 candidate
   SK를 문서화하고 unit 테스트를 추가했다.
 
 - M1 A 정책 원문 업로드 세션 API를 배포 Lambda에 배선: 도메인 코드(`PolicySourceApiService`,
@@ -1244,7 +1244,7 @@
 
 - Docs 정합성 점검 및 수정: `evidence_reference` 정규형을 실행 Contract 정본
   `{source_id}@{source_version}#{locator}`(`packages/contracts/policy.py`)로 통일 —
-  `docs/API.md`, `docs/CONTRACTS.md`(예시·서술·중복 bullet 제거) 수정. 재점검에서 발견한
+  `docs/design/API.md`, `docs/design/CONTRACTS.md`(예시·서술·중복 bullet 제거) 수정. 재점검에서 발견한
   fixture-vs-contract gap 수정: `fixtures/m1/` golden 3파일의 IaC evidence prefix `github:`(14곳)를
   allow-list(`aws:`/`terraform:`/`s3://`)·런타임과 일치하는 `terraform:`로 교정. `docs/DESIGN.md`의
   ADR 열거를 0001~0021로 최신화. 609개 테스트(unit/contract/security/integration)와 ruff 통과 확인.
@@ -1307,7 +1307,7 @@
 - M1 B Policy Source 승인·Profile publication 경계: `RuleLifecycle`, `RuleCandidate`,
   finalization tuple을 인용하는 immutable `PolicySourceApproval` Contract와, `READY` 문서에만
   승인이 붙고 locator/hash가 정규화 결과와 일치할 때만 통과하는 `approve_source()`,
-  `docs/POLICY_INGESTION.md`의 게시 거부 조건 3건(승인되지 않은 Source/Rule, 승인과 다른
+  `docs/design/POLICY_INGESTION.md`의 게시 거부 조건 3건(승인되지 않은 Source/Rule, 승인과 다른
   Source version, 승인 record의 artifact binding 불일치)을 구현한 `publish_profile()` 추가.
   거부 사유는 `ApprovalRejectionCode` 열거값이며, 승인되지 않은 Rule이 `PolicyContext`에
   도달하지 못함을 테스트로 고정 (승인 API·조건부 write 배선은 A)
@@ -1434,7 +1434,7 @@
   `compare_post_deploy_assessments()`에 배선돼 있다.
 - ~~**M3 A endpoint 배선 (Contract 동결 이후)**~~ **해소됨:** `POST /remediations/{id}/deployments`,
   `GET /deployments/{id}`, `GET /deployments/{id}/verification`, `POST /deployments/{id}/reject` 전부
-  handler branch + API Gateway route로 배선됨(`docs/API.md` M3 표). 라이브 확인만 재배포 뒤로 남는다.
+  handler branch + API Gateway route로 배선됨(`docs/design/API.md` M3 표). 라이브 확인만 재배포 뒤로 남는다.
 - **M3 C:** `POST_DEPLOY_VERIFICATION` phase의 18개 Golden Case(6 Rule × 3 perspective)를 추가했다.
   16개 정합 `PASS` snapshot과 logging 설정이 남은 Actual/Drift 2개 `FAIL` snapshot이며 원 Assessment와
   같은 rubric을 쓴다. fixture gate는 통과했고, 실제 Bedrock 반복 평가는 M4 customer sandbox gate로
@@ -1460,14 +1460,14 @@
   (EC2 3 / RDS 4 / ALB 2)은 품질 게이트 없이 평가되므로, C의 rubric 반복 평가와 함께 case를 추가해야
   한다. fixture만 늘리는 것은 근거가 아니다 (ADR-0021/0022).
 - M4 C external evidence: A/D가 protected customer sandbox의 Post-Deploy artifact set과 실제 Demo
-  실행을 제공하면 `docs/M4-GOLDEN-RELEASE-GATE.md` 절차로 18 Case × 5 run private observation
+  실행을 제공하면 `docs/evaluations/M4-GOLDEN-RELEASE-GATE.md` 절차로 18 Case × 5 run private observation
   bundle을 만들고 `scripts/evaluate_m4_golden_release_gate.py --observations ...`로 sanitized report를
   생성한다. Dry-run의 `EXTERNAL_EVIDENCE_REQUIRED`나 fixture 결과는 release 통과 근거가 아니다.
   같은 `execution_id`와 repository/deployment/artifact digest로 A 관측·비용, D plan/apply 증적을
   결합한다 (ADR-0022).
 - ~~M1 A: 업로드 세션 / 승인·Profile 게시 API 배선 / 업로드→정규화→승인→Profile→Assessment 통합
   테스트~~ **해소됨 (2026-09-04 확인):** 업로드 세션·상태 조회·`/process`·`/approve`·
-  `POST /policy-profiles`·목록·삭제가 전부 배선됐고(`docs/API.md` "Customer policy ingestion"),
+  `POST /policy-profiles`·목록·삭제가 전부 배선됐고(`docs/design/API.md` "Customer policy ingestion"),
   ADR-0023 authoring worker가 후보를 채운다. 통합 테스트는
   `tests/integration/test_policy_ingestion_lifecycle.py`·`test_policy_authoring_to_assessment.py`.
 - M1 A: 승인된 고객 sandbox에 Auth bootstrap을 배포하고, controlled local user의 Hosted UI
@@ -1483,7 +1483,7 @@
 ## Blocked
 
 - ~~M1 actual sandbox validation: required reviewer·`M1_ASSESSMENT_MODE`·M1 Secret 3개 미설정~~
-  **해소됨 (2026-09-03, `docs/SESSION-HANDOFF-2026-09-03.md` §2):** 두 Environment 모두 필수 리뷰어
+  **해소됨 (2026-09-03, `docs/archive/SESSION-HANDOFF-2026-09-03.md` §2):** 두 Environment 모두 필수 리뷰어
   게이트가 있고 deploy Environment에 `M1_ASSESSMENT_MODE=live`와 Secret 3개가 설정됐다. Foundation 스택은
   `d687a00`(#71)까지 배포됐고 라이브 Initial Assessment·remediation patch 생성까지 완주했다(§4).
   남은 것은 `dev` HEAD(#72 포함) 재배포 — 그 전에 bootstrap 스택을 새 템플릿으로 갱신해야 한다(§6 H).
@@ -1524,13 +1524,13 @@
 - [x] **B — Policy/Governance Boundary:** Policy Source, Rule, Policy Profile, Source Reference의 초기 Contract *(Fixture 기반 read-only Policy Catalog, Rule ID+version pinning, Profile allow-list Policy Context bootstrap 완료; DynamoDB catalog는 M1 통합 대상으로 이관)*
 - [x] **C — AI Evaluation:** `EvaluationResult` 출력 Schema, Score/Rubric Version, Golden Dataset 최소 Case *(S3 단일 대상, `us-east-1` Nova Lite 승인 Profile, API → Outbox → revision-checked Assessment worker → immutable DynamoDB result Fixture integration 및 반복 Golden quality gate 구현 완료; Snapshot/Bedrock invoke/Lambda wiring은 M1 통합 대상으로 이관)*
 - [x] **D — Remediation/GitHub/Deployment:** GitHub/AWS Resource Tool Interface, IaC Snapshot·Patch·Plan Contract *(IaC snapshot-bound Remediation guard bootstrap 완료)*
-- [x] **Shared:** `docs/API.md`, `docs/CONTRACTS.md`, `docs/DATABASE.md` Review 및 PR Gate/기본 CI 구성 *(Python Checks, PR source validation, Secret Scan bootstrap 완료)*
+- [x] **Shared:** `docs/design/API.md`, `docs/design/CONTRACTS.md`, `docs/design/DATABASE.md` Review 및 PR Gate/기본 CI 구성 *(Python Checks, PR source validation, Secret Scan bootstrap 완료)*
 
 **Dependencies:** B/C/D Contract는 A의 Job/Storage 경계와 합의한다. 구현체가 없는 Interface는 Fixture/Mock으로 진행한다.
 
 ### M1 — Initial Assessment MVP
 
-**Exit criteria:** EC2/RDS/ALB/S3 중 첫 대상 범위에서 Repository + 승인된 Policy Profile을 입력해 Initial Assessment, Finding, Evidence, Readiness Score, Coverage를 조회할 수 있다. 정적 seed가 아닌 사용자 업로드 정책을 제품 기능으로 표시하려면 `docs/POLICY_INGESTION.md`의 별도 Delivery gate를 충족해야 한다.
+**Exit criteria:** EC2/RDS/ALB/S3 중 첫 대상 범위에서 Repository + 승인된 Policy Profile을 입력해 Initial Assessment, Finding, Evidence, Readiness Score, Coverage를 조회할 수 있다. 정적 seed가 아닌 사용자 업로드 정책을 제품 기능으로 표시하려면 `docs/design/POLICY_INGESTION.md`의 별도 Delivery gate를 충족해야 한다.
 
 - [ ] **A — Platform/Backend:** Assessment Job 생성·상태 조회, JWT/RBAC/Scope 검증, Metadata/Artifact 저장,
   고객 AWS Account용 Auth bootstrap *(고객 소유 IdP federation 또는 Cognito local user 결정, 초기
@@ -1621,8 +1621,8 @@ plan_hash·state·merge commit·deployment_id·apply 경계는 `Accepted`로 확
   perspective/overall threshold를 검증하고 sanitized report만 출력한다. 실제 protected run report는
   A/D sandbox 준비 뒤 release 증적으로 생성하며 dry-run/fixture는 근거가 아니다 — ADR-0021/0022)*
 - [ ] **D — Remediation/GitHub/Deployment:** Demo IaC, Plan/Apply/검증 runbook 확인 *(데모 IaC는 별도
-  고객 sandbox repository — ADR-0021 §1. **문서 몫 완료:** `docs/M4-DEMO-IAC-REFERENCE.md`(별도
-  데모 저장소 식별자·전제조건·6개 S3 Rule 1:1 위반 토글 매핑·세 관점 재현), `docs/M4-DEMO-RUNBOOK.md`
+  고객 sandbox repository — ADR-0021 §1. **문서 몫 완료:** `docs/demo/M4-DEMO-IAC-REFERENCE.md`(별도
+  데모 저장소 식별자·전제조건·6개 S3 Rule 1:1 위반 토글 매핑·세 관점 재현), `docs/demo/M4-DEMO-RUNBOOK.md`
   (Initial→Remediation/PR→plan→승인→apply→Post-Deploy Verification 폐루프, 재조회 시점 규칙,
   ADR-0021 §3 관측·비용 기록 표), `fixtures/terraform/README.md`(비어 있음 이유·참조). ADR-0022 §4의
   **D producer 결합 로직도 구현**: `apps/backend/deployment/release_binding.py`의
