@@ -60,6 +60,7 @@ env:
   TF_STATE_KEY: ${{ vars.TF_STATE_KEY }}
   TF_LOCK_TABLE: ${{ vars.TF_LOCK_TABLE }}
   TF_VAR_sandbox_bucket_name: ${{ vars.SANDBOX_BUCKET_NAME }}
+  TF_VAR_owner_tag: ${{ vars.OWNER_TAG }}
 
 jobs:
   apply:

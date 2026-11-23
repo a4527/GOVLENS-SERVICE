@@ -61,6 +61,8 @@ distribution; it cannot mutate the foundation stack, API, Cognito, DynamoDB, or 
 The foundation deploy creates this role only when the protected Environment supplies both
 `FRONTEND_SPA_BUCKET_NAME` and `FRONTEND_DISTRIBUTION_ID`. `OIDC_SUBJECT_PREFIX` must carry the
 same name-based or immutable-ID subject prefix used by the customer bootstrap role.
+`OWNER_TAG` is the non-secret value of the `Owner` stack tag; the deploy job rejects an empty value
+and tags the stack with `Owner`, `Project`, and `Layer=foundation` (DEC-0030).
 
 For M1 sandbox frontend testing, the stack also creates Cognito `Admin`/`User` groups and a
 Hosted UI domain with Authorization Code OAuth enabled. The customer-operated local-user
