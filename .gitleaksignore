@@ -1,0 +1,7 @@
+# 과거 커밋의 Gitleaks 오탐 (2026-11-23 전체 기록 스캔에서 확인).
+# - generic-api-key 3건: Governance Control Catalog 식별자(예: EC2_EBS_ENCRYPTION)이며 비밀값이 아니다.
+# - private-key 1건: 비RSA 키 거부 테스트의 더미 PEM(본문 "Zm9v" = base64 "foo").
+605ef553df9c459603f00ecf775b163d3a5dc878:tests/unit/test_remediation_scope_registries.py:generic-api-key:82
+988cf71dc43411e049d7fd6a34871dd768ee87ba:fixtures/baselines/isms-p-2023/rules.isms-p.json:generic-api-key:2635
+988cf71dc43411e049d7fd6a34871dd768ee87ba:fixtures/baselines/isms-p-2023/rules.isms-p.json:generic-api-key:2959
+f5b92fa17d29ae31cad331609e8bae881f9c65c6:tests/unit/test_github_app_token.py:private-key:86
