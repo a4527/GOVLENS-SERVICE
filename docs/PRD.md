@@ -31,11 +31,11 @@ MVP의 가치는 Rule 수가 아니라 실제 AWS 환경에서 `Assessment → F
 - 화면: Login, Policy/Rule/Profile, Assessment, Finding/Report, Remediation Diff, PR/CI/Plan, Approval/Deployment, Audit
 - 정책 입력: 사용자가 고객 Scope 안에서 사내 정책 원문을 업로드하고, 검증·정규화·사람 승인을
   마친 Policy Source/Rule/Profile을 Assessment에 선택한다. 저장 성공과 해석 가능 여부는 구분하며,
-  지원 문서 형식과 미지원 처리 기준은 `docs/POLICY_INGESTION.md`를 따른다.
+  지원 문서 형식과 미지원 처리 기준은 `docs/design/POLICY_INGESTION.md`를 따른다.
 
 ## Development roles
 
-MVP는 A(Platform/Backend), B(Policy/Governance Boundary), C(AI Evaluation), D(Remediation/GitHub/Deployment) 역할로 나눠 개발한다. 역할별 상세 책임과 Repository 경계는 `docs/DESIGN.md`를 정본으로 한다. Contracts, Integration Test, C4/ADR, E2E는 공동 책임이다.
+MVP는 팀 프로젝트로 A(Platform/Backend), B(Policy/Governance Boundary), C(AI Evaluation), D(Remediation/GitHub/Deployment) 역할로 나눠 개발했고, 2026-11-23부터 개인 프로젝트로 운영한다([DEC-0028](DECISIONS.md#dec-0028)). A–D는 이제 사람이 아니라 구성 요소 영역의 이름이며 코드·ADR에서 그대로 쓴다. 영역별 책임과 Repository 경계는 `docs/DESIGN.md`를 정본으로 한다.
 
 ## Core workflow
 
@@ -79,7 +79,7 @@ Deployment처럼 비용·상태·변경을 유발할 수 있는 실행은 Backen
   기록하며, Finding 해소 여부와 점수·Coverage 변화는 AI 판정이 아니라 두 결과의 결정적 비교다
   (ADR-0020).
 
-이 단계는 Git Branch인 `dev`와 `main`의 의미와 분리된다.
+이 단계는 Git Branch(`main`·작업 브랜치)의 의미와 분리된다.
 
 ## Model Profile and natural-language orchestration
 

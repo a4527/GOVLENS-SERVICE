@@ -262,8 +262,8 @@ ModelProfile Contract와 persistence는 현재 구현되어 있습니다. 승인
 ### 관련 파일
 
 - `docs/DESIGN.md`: 최신 Parent/Assessment/Remediation/Deployment 구조
-- `docs/decisions/ADR-0012-natural-language-orchestration-and-model-profiles.md`: Model Profile 결정
-- `docs/CONTRACTS.md`: 구현된 ModelProfile Contract와 active Profile 조건
+- `docs/adr/ADR-0012-natural-language-orchestration-and-model-profiles.md`: Model Profile 결정
+- `docs/design/CONTRACTS.md`: 구현된 ModelProfile Contract와 active Profile 조건
 - `bench/config.py`: 기존 benchmark capability별 후보 Model ID
 - `bench/cases.py`: 기존 합성 입력과 기계 검증 기대값
 - `bench/run_bench.py`: 모델 발견, 병렬 Converse 호출과 결과 저장

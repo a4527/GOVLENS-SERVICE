@@ -1,6 +1,6 @@
 """Human approval and Policy Profile publication contracts.
 
-`docs/POLICY_INGESTION.md`의 "Required public/API boundary" 4번과 5번이다. **승인과 게시는 서로
+`docs/design/POLICY_INGESTION.md`의 "Required public/API boundary" 4번과 5번이다. **승인과 게시는 서로
 다른 operation이다.** 승인은 Source/Control/Rule version을 확정할 뿐이고, 그 Rule들을 실제 평가
 경계로 만드는 것은 Profile publication이다. 하나의 operation으로 합치더라도 거부 조건은 같다.
 
@@ -19,7 +19,7 @@ from packages.contracts.policy_ingestion import NormalizedPolicyDocument
 class RuleLifecycle(StrEnum):
     """Where one Rule version sits between extraction and evaluation.
 
-    `docs/DATABASE.md`의 Rule metadata 항목(`RULE#{rule_id}#VERSION#{version}`)이 담기로 한
+    `docs/design/DATABASE.md`의 Rule metadata 항목(`RULE#{rule_id}#VERSION#{version}`)이 담기로 한
     lifecycle이다. `APPROVED`만 Profile이 참조할 수 있다.
     """
 
@@ -54,7 +54,7 @@ class RuleCandidate:
     """One proposed Rule and where in an approved source version it came from.
 
     후보는 사람이 승인하기 전의 상태다. 자동 생성됐든 손으로 썼든, 승인 전에는 Profile이나
-    Assessment에 들어갈 수 없다 (`docs/POLICY_INGESTION.md` Security and tenant isolation).
+    Assessment에 들어갈 수 없다 (`docs/design/POLICY_INGESTION.md` Security and tenant isolation).
     """
 
     rule: PolicyRule
@@ -150,7 +150,7 @@ class PolicyCandidateExtraction:
 class PolicySourceApproval:
     """An immutable human approval bound to one exact uploaded original.
 
-    `docs/POLICY_INGESTION.md` Original finalization: 승인 record는
+    `docs/design/POLICY_INGESTION.md` Original finalization: 승인 record는
     `(source_id, source_version, artifact_id, s3_version_id, content_sha256)`을 그대로 인용하며,
     다른 판본으로 승인을 옮겨 붙일 수 없다. Profile publication이 이 tuple을 다시 대조한다.
     """
@@ -194,7 +194,7 @@ class PolicySourceApproval:
     def original_binding(self) -> tuple[str, str, str]:
         """`(artifact_id, s3_version_id, content_sha256)` — 승인이 붙은 정확한 원본 판본.
 
-        `docs/POLICY_INGESTION.md` Original finalization이 요구하는 tuple 전체다. 게시 시점의
+        `docs/design/POLICY_INGESTION.md` Original finalization이 요구하는 tuple 전체다. 게시 시점의
         대조는 `(artifact_id, content_sha256)`까지만 가능하다 — `PolicySource` Contract에
         `s3_version_id` 필드가 없다. 두 값이 같으면 같은 바이트이므로 판본이 뒤바뀌는 경우는
         걸리지만, S3 object version까지 못 박으려면 A가 조건부 write에서 이 tuple을 그대로 쓴다.

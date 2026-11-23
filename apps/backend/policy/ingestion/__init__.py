@@ -1,6 +1,6 @@
 """Customer policy ingestion: format allow-list, parsers, and normalization.
 
-`docs/POLICY_INGESTION.md`(ADR-0015)의 B 소유 경계다. 업로드 세션·저장·상태 write는 A가,
+`docs/design/POLICY_INGESTION.md`(ADR-0015)의 B 소유 경계다. 업로드 세션·저장·상태 write는 A가,
 AI 후보 추출은 C가 담당하며 둘 다 여기서 나오는 `NormalizedPolicyDocument`를 소비한다.
 """
 

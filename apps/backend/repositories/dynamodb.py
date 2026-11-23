@@ -45,7 +45,7 @@ class DynamoTransactionClient(Protocol):
 
 
 class DynamoDbJobRepository:
-    """Map Job state to the CUSTOMER# / JOB# key layout in docs/DATABASE.md."""
+    """Map Job state to the CUSTOMER# / JOB# key layout in docs/design/DATABASE.md."""
 
     def __init__(self, table: DynamoTable) -> None:
         if table is None:

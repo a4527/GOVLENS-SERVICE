@@ -2,7 +2,7 @@ name: CloudFormation Checks
 
 on:
   pull_request:
-    branches: [dev, main]
+    branches: [main]
     paths:
       - "infrastructure/cloudformation/**"
       - "infrastructure/parameters/**"

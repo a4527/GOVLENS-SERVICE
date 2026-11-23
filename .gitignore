@@ -28,3 +28,29 @@ policies-local/
 *.pem
 *.private-key.pem
 *:Zone.Identifier
+
+# Local secrets and credentials (project-docs-scaffold)
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.tfvars
+*credentials*.json
+*service-account*.json
+secrets.json
+.npmrc
+.pypirc
+id_rsa
+id_ed25519
+id_ecdsa
+id_dsa
+
+# Local tools, logs, editor files
+.tools/
+.cache/
+venv/
+*.log
+.DS_Store
+.idea/
+.vscode/

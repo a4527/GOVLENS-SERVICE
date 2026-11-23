@@ -6,7 +6,7 @@
 Assessment가 이미 사용한 정책을 바꾸지 않고 fail-closed한다.
 
 이 경로는 고객 정책 업로드 기능이 아니다. 검토·커밋된 Registry만 게시하며, 고객 업로드
-경로는 `docs/POLICY_INGESTION.md`의 별도 Delivery gate를 따른다.
+경로는 `docs/design/POLICY_INGESTION.md`의 별도 Delivery gate를 따른다.
 
 Registry는 둘이다(`--registry`). `legacy`는 `fixtures/rules/`의 자동 평가 Rule 16개이고,
 `isms-p-2023`은 `fixtures/baselines/isms-p-2023/`의 ISMS-P 인증기준 기준선이다 — 101개 항목

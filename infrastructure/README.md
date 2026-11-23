@@ -18,7 +18,7 @@ The bootstrap supports an existing account-level GitHub OIDC provider through
 this stack with its own approved administrator path. It is not run by a local
 Agent session or by the repository workflow it enables. Its outputs are the
 only AWS identifiers needed by `Deploy M0 Foundation`; see
-`docs/M1-SANDBOX-INTEGRATION.md` for the complete M1 sequence.
+`docs/sandbox/M1-SANDBOX-INTEGRATION.md` for the complete M1 sequence.
 
 ## M0 foundation contract
 
@@ -26,7 +26,7 @@ The first stack accepts `ProjectName` and `Environment`; it normally derives phy
 `<project>-<env>-<component>`. The globally named artifact bucket is the explicit exception and
 uses `<project>-<env>-artifacts-<account-id>`. The stack creates one metadata DynamoDB table and
 one private artifact S3 bucket. The table has on-demand capacity, encryption, point-in-time recovery,
-the `expires_at` TTL attribute, and `GSI1`–`GSI3` from `docs/DATABASE.md`.
+the `expires_at` TTL attribute, and `GSI1`–`GSI3` from `docs/design/DATABASE.md`.
 
 The stack must retain data by default. It must not create customer-workload write permissions:
 Agent Runtime and AWS Resource Tool roles are read-only, and Terraform write permissions stay
@@ -64,7 +64,7 @@ same name-based or immutable-ID subject prefix used by the customer bootstrap ro
 
 For M1 sandbox frontend testing, the stack also creates Cognito `Admin`/`User` groups and a
 Hosted UI domain with Authorization Code OAuth enabled. The customer-operated local-user
-handoff and PKCE frontend test are documented in `docs/M1-AUTH-FRONTEND-TEST.md`; no user
+handoff and PKCE frontend test are documented in `docs/sandbox/M1-AUTH-FRONTEND-TEST.md`; no user
 password is a CloudFormation parameter or repository value.
 
 ## Storage hardening and validation
@@ -86,13 +86,13 @@ run must verify a controlled artifact Get/Put produces a delivered, validated tr
 
 M0 Assessment Workers use packaged synthetic fixtures and receive no ArtifactBucket permission.
 Before a Worker accesses customer artifacts, its runtime identity must be tenant-scoped as defined
-in `docs/decisions/ADR-0014-artifact-audit-and-tenant-isolation.md`; a shared `customers/*` role
+in `docs/adr/ADR-0014-artifact-audit-and-tenant-isolation.md`; a shared `customers/*` role
 is not an acceptable tenant isolation boundary.
 
 The stack exposes metadata table and artifact bucket names and ARNs for runtime injection and
 least-privilege integrations. `ProjectName` and `Environment` constraints, including the
 account-qualified S3 naming exception, are documented in `parameters/README.md` and
-`docs/NAMING.md`. The non-deploying approval-input checklist and controlled sandbox CloudTrail
+`docs/design/NAMING.md`. The non-deploying approval-input checklist and controlled sandbox CloudTrail
 acceptance procedure are in `parameters/m0-foundation-sandbox-deployment-runbook.md`; they must be
 completed through the protected GitHub Actions path, not from a local developer or Agent session.
 

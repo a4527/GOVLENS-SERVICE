@@ -1,6 +1,6 @@
 """Judge whether one Finding may be remediated automatically, is exempt, or needs a human.
 
-`PROGRESS.md` M2 B 항목이다. D의 Patch 생성과 A의 Remediation API가 이 판정을 **앞에서**
+`docs/archive/PROGRESS-team-2026.md` M2 B 항목이다. D의 Patch 생성과 A의 Remediation API가 이 판정을 **앞에서**
 호출한다. 이 모듈은 아무것도 영속화하지 않고 GitHub·AWS·Terraform 어느 쪽도 건드리지 않는다.
 
 허용 범위는 커밋된 Registry(`fixtures/rules/remediation.json`)가 정본이고, 예외는 고객 데이터라

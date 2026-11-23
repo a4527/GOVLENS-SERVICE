@@ -1,4 +1,4 @@
-# docs/NAMING.md가 고정한 Required Check다.
+# docs/design/NAMING.md가 고정한 Required Check다.
 # Ruleset에 등록되는 check 이름은 아래 job name `validate-pr-source`와 정확히 같아야 한다.
 # 이름을 바꾸면 main Ruleset의 Required Check가 영원히 pending 상태가 되어 Merge가 막힌다.
 name: PR Source Validation
@@ -37,9 +37,8 @@ jobs:
         run: |
           set -euo pipefail
 
-          # CONTRIBUTING.md가 허용한 경로는 두 가지뿐이다.
-          #   short-lived 작업 branch -> dev
-          #   같은 Repository의 dev   -> main
+          # CONTRIBUTING.md가 허용한 경로는 하나뿐이다.
+          #   같은 Repository의 short-lived 작업 branch -> main
           allowed_prefixes='^(feature|fix|docs|refactor|test|chore)/[A-Za-z0-9._/-]+$'
 
           case "$BASE_REF" in
@@ -48,24 +47,12 @@ jobs:
                 echo "::error::main 대상 PR의 head repository는 '$BASE_REPO' 여야 합니다. 현재: '$HEAD_REPO'"
                 exit 1
               fi
-              if [ "$HEAD_REF" != "dev" ]; then
-                echo "::error::main 대상 PR의 유일한 허용 head는 'dev' 입니다. 현재: '$HEAD_REF'. \
-          작업 branch는 dev로 PR하고, main에는 dev만 통합하세요 (CONTRIBUTING.md)."
-                exit 1
-              fi
-              echo "OK: '$HEAD_REPO' 의 dev -> main 안정화 통합 PR"
-              ;;
-            dev)
-              if [ "$HEAD_REF" = "main" ] || [ "$HEAD_REF" = "dev" ]; then
-                echo "::error::dev 대상 PR의 head는 short-lived 작업 branch여야 합니다. 현재: '$HEAD_REF'."
-                exit 1
-              fi
               if ! printf '%s' "$HEAD_REF" | grep -Eq "$allowed_prefixes"; then
-                echo "::error::dev 대상 PR의 head는 feature/, fix/, docs/, refactor/, test/, chore/ \
-          중 하나로 시작해야 합니다. 현재: '$HEAD_REF' (docs/NAMING.md)."
+                echo "::error::main 대상 PR의 head는 feature/, fix/, docs/, refactor/, test/, chore/ \
+          중 하나로 시작해야 합니다. 현재: '$HEAD_REF' (docs/design/NAMING.md)."
                 exit 1
               fi
-              echo "OK: '$HEAD_REF' -> dev 일반 작업 PR"
+              echo "OK: '$HEAD_REF' -> main 작업 PR"
               ;;
             *)
               echo "base가 '$BASE_REF' 이므로 보호 대상 branch가 아닙니다. 검사 대상 아님."

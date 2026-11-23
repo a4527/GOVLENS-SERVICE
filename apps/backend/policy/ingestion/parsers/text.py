@@ -26,7 +26,7 @@ MARKDOWN_PARSER_ID = "markdown-parser"
 #: 1.1.0: 빈 줄 없이 이어진 최상위 목록 항목을 각각 별도 unit으로 나눈다. 1.0.1은 tight list 전체를
 #: unit 하나로 묶어 요구사항 여러 개가 locator 하나를 공유했다 — 승인·Evidence가 가리키는 단위가
 #: "문장"이 아니라 "목록 전체"가 되는 문제다. parser version이 바뀌었으므로 같은 원본도 새 Source
-#: version으로 정규화된다(`docs/POLICY_INGESTION.md` Evidence identity).
+#: version으로 정규화된다(`docs/design/POLICY_INGESTION.md` Evidence identity).
 MARKDOWN_PARSER_VERSION = "1.1.0"
 PLAIN_TEXT_PARSER_ID = "plain-text-parser"
 PLAIN_TEXT_PARSER_VERSION = "1.0.1"

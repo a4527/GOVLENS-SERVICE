@@ -270,7 +270,7 @@ class PolicySourceApprovalContractTest(unittest.TestCase):
 
 class RejectionCodeContractTest(unittest.TestCase):
     def test_the_three_documented_publication_refusals_have_codes(self) -> None:
-        """`docs/POLICY_INGESTION.md`가 명시한 거부 조건 3건에 각각 코드가 있어야 한다."""
+        """`docs/design/POLICY_INGESTION.md`가 명시한 거부 조건 3건에 각각 코드가 있어야 한다."""
         for code in (
             ApprovalRejectionCode.SOURCE_NOT_APPROVED,
             ApprovalRejectionCode.RULE_NOT_APPROVED,

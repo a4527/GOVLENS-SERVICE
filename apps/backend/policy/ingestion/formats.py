@@ -1,6 +1,6 @@
 """Fail-closed format detection for uploaded customer policy documents.
 
-`docs/POLICY_INGESTION.md` Format policy: 확장자만 신뢰하지 않는다. 선언한 media type, 파일
+`docs/design/POLICY_INGESTION.md` Format policy: 확장자만 신뢰하지 않는다. 선언한 media type, 파일
 signature로 탐지한 형식, Parser가 실제로 지원하는 형식을 함께 검증하고, 셋 중 하나라도
 어긋나면 처리하지 않는다. 지원 목록에 없는 형식은 업로드가 성공했더라도 거부한다.
 """

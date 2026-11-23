@@ -2,7 +2,7 @@ name: Frontend Checks
 
 on:
   pull_request:
-    branches: [dev, main]
+    branches: [main]
     paths:
       - "apps/frontend/**"
       - ".github/workflows/frontend-checks.yml"

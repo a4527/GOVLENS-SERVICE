@@ -1,6 +1,6 @@
 """Approve reviewed Rule candidates and publish them as a Policy Profile.
 
-`docs/POLICY_INGESTION.md`의 "Required public/API boundary" 4번과 5번이다. **승인과 게시는 서로
+`docs/design/POLICY_INGESTION.md`의 "Required public/API boundary" 4번과 5번이다. **승인과 게시는 서로
 다른 operation이다.** 승인은 Source/Control/Rule version을 확정하고, 게시는 그 Rule들을 평가
 경계로 만든다. 하나로 합치더라도 거부 조건은 같으므로 판정을 두 함수로 나눠 둔다.
 
@@ -170,7 +170,7 @@ def publish_profile(
 ) -> PolicyProfile:
     """Build a Policy Profile from approved rules, refusing anything unapproved.
 
-    `docs/POLICY_INGESTION.md`가 명시한 세 거부 조건을 그대로 구현한다.
+    `docs/design/POLICY_INGESTION.md`가 명시한 세 거부 조건을 그대로 구현한다.
 
     1. 승인되지 않은 Source 또는 Rule을 참조하는 Profile
     2. 승인된 것과 다른 Source version을 가리키는 `SourceReference`
