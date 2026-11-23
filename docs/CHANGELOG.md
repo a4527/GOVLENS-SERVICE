@@ -4,6 +4,7 @@
 
 ## 2026-11-23
 
+- 개인 sandbox를 단일 AWS 계정으로 운영하기로 했다. Foundation은 유지하고 customer-demo workload만 작업일마다 만들고 지운다. 모든 리소스에 공통 태그 `Owner`·`Project`·`Layer`를 붙인다([DEC-0030](DECISIONS.md#dec-0030)).
 - Worker는 LangGraph 없이 일반 Python으로 유지하기로 하고 아키텍처 문서를 구현에 맞췄다([DEC-0029](DECISIONS.md#dec-0029)). LangGraph는 자연어 진입점에만 쓴다.
 - 문서 구조와 비밀값 검사 훅을 초기화했다.
 - 개인 프로젝트로 전환했다. `dev` 브랜치를 없애고 작업 브랜치 → `main` PR로 CI 규칙을 바꿨다([DEC-0028](DECISIONS.md#dec-0028)).
