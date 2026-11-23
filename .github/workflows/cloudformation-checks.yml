@@ -43,6 +43,7 @@ jobs:
           cfn-lint --non-zero-exit-code error
           infrastructure/cloudformation/m0-foundation.yaml
           infrastructure/cloudformation/m1-customer-bootstrap.yaml
+          infrastructure/cloudformation/customer-onboarding.yaml
 
       - name: Verify CloudFormation security controls
         run: >-
