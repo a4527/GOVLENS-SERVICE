@@ -14,7 +14,7 @@
 검증 명령:
 
 ```bash
-python3 scripts/validate_m4_demo_policy_coverage.py
+python3 scripts/validate_demo_policy_coverage.py
 ```
 
 성공 결과는 Rule 6개, Control 5개, 고유 정책 근거 12개, Golden Case 36개를 보고한다. Profile/Rule version, Control mapping, SourceReference locator, case ID, phase 또는 perspective가 정본과 다르면 실패한다.

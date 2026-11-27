@@ -1,7 +1,7 @@
 """Export the M4 Golden observation bundle (ADR-0022 A producer).
 
 이 CLI는 Post-Deploy 18 Case를 운영 평가기로 5회 반복 실행해 `m4-golden-observations-v1` bundle을
-쓴다. 그 bundle을 `scripts/evaluate_m4_golden_release_gate.py --observations`에 넘기면 C gate가
+쓴다. 그 bundle을 `scripts/evaluate_golden_release_gate.py --observations`에 넘기면 C gate가
 sanitized report를 만든다.
 
 두 실행 방식이 있다.

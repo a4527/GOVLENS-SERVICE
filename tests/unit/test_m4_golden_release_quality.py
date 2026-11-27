@@ -196,7 +196,7 @@ class M4GoldenReleaseQualityTest(unittest.TestCase):
             result = subprocess.run(
                 [
                     sys.executable,
-                    str(ROOT / "scripts" / "evaluate_m4_golden_release_gate.py"),
+                    str(ROOT / "scripts" / "evaluate_golden_release_gate.py"),
                     "--observations",
                     str(observations_path),
                     "--output-dir",

@@ -6,9 +6,9 @@ role ARN, scope JSON, credentials, artifact 내용, object key를 저장소나 P
 
 ## Boundary
 
-- 이 문서는 GitHub Actions의 `Deploy M0 Foundation` 수동 workflow를 위한 준비 절차다.
+- 이 문서는 GitHub Actions의 `Deploy Platform Foundation` 수동 workflow를 위한 준비 절차다.
   OIDC deployment role과 versioned Lambda-code bucket은 고객 관리자가
-  `infrastructure/cloudformation/m1-customer-bootstrap.yaml`로 먼저 만든다.
+  `infrastructure/cloudformation/platform-bootstrap.yaml`로 먼저 만든다.
   로컬 개발자·Agent 세션에서 `aws cloudformation deploy`, artifact upload, CloudTrail 조회 또는
   object Get/Put을 실행하지 않는다.
 - 실제 변경은 보호된 GitHub Environment의 required reviewer 승인 뒤 customer-approved OIDC role로
@@ -37,14 +37,14 @@ Environment 또는 고객 승인 채널에서만 공유하며, 이 저장소와 
 | Lambda artifact bucket | Bucket name and versioning evidence | Customer-owned by the expected account, versioning is `Enabled`, and the OIDC role can conditionally create or read only the commit-qualified workflow key/version. |
 | Lambda artifact binding | Reviewed commit SHA and expected packaging path | Workflow approval evidence must record the commit SHA, ZIP SHA-256, object key, and returned S3 Version ID; every Lambda uses that Version ID. |
 | Assessment scope | Approved selector map | Fail-closed JSON; contains no credentials, policy originals, prompts, or full IaC content. `{}` is valid only for an intentional fixture deployment. |
-| Assessment mode | Protected deployment Environment variable and protected-value name inventory | `M1_ASSESSMENT_MODE` is exactly `live` or `fixture`; live requires all three named M1 Secrets and fixture requires all three to be absent. Values are never copied into the approval packet. |
+| Assessment mode | Protected deployment Environment variable and protected-value name inventory | `ASSESSMENT_MODE` is exactly `live` or `fixture`; live requires all three named M1 Secrets and fixture requires all three to be absent. Values are never copied into the approval packet. |
 | Retention operations | Named customer owner and retention decision | Owner accepts retained metadata/audit resources, CloudTrail data-event cost, audit-log access boundary, and the stack termination-protection decision. |
 | Sandbox test principal | Customer-approved controlled principal and window | May perform only one verification `PutObject` and `GetObject` for the opaque ArtifactBucket key; it is not a Worker runtime identity. |
 | Evidence executor | Customer-approved separate principal and window | May list the approved account/region/day audit prefixes and transiently `GetObject` only for those CloudTrail logs/digests during validation; it cannot write audit artifacts or read other prefixes. |
 
 Stop before dispatch if any item is missing, the revision differs from the reviewed revision, either
 Environment lacks required reviewers or the same valid `EXPECTED_AWS_ACCOUNT_ID`, the deployment
-Environment lacks an explicit `M1_ASSESSMENT_MODE`, live mode lacks any required M1 Secret, the
+Environment lacks an explicit `ASSESSMENT_MODE`, live mode lacks any required M1 Secret, the
 live deployment Region differs from `fixtures/m1/assessment_model_profile.json`, the configured
 GitHub identity is not a canonical `owner/repository`, either credential
 Secret ARN set overlaps the other, the artifact bucket is not versioned or owned by that account,
@@ -52,10 +52,10 @@ or the OIDC trust boundary cannot be attested.
 
 ## 2. Workflow inputs
 
-Dispatch `.github/workflows/deploy-m0-foundation.yml` manually from the reviewed merged `dev`
+Dispatch `.github/workflows/deploy-platform-foundation.yml` manually from the reviewed merged `dev`
 revision. Populate only the workflow inputs below. Before dispatch, both selected protected
 Environments must define the same customer-approved 12-digit `EXPECTED_AWS_ACCOUNT_ID`; it is not a
-workflow input. `LambdaCodeS3Key` is derived as `lambda/m0/<GitHub commit SHA>.zip`, and
+workflow input. `LambdaCodeS3Key` is derived as `lambda/foundation/<GitHub commit SHA>.zip`, and
 `LambdaCodeS3ObjectVersion` is taken from the successful conditional upload response. Do not provide
 either value manually.
 
@@ -72,7 +72,7 @@ either value manually.
 | `lambda_code_s3_bucket` | Versioning-enabled customer-owned deployment-artifact bucket. The workflow checks versioning before upload. |
 | `assessment_scope_json` | Approved fail-closed selector JSON. Do not paste sensitive policy or artifact data into the workflow input. |
 
-`M1_ASSESSMENT_MODE` is not a workflow input. The second protected Environment
+`ASSESSMENT_MODE` is not a workflow input. The second protected Environment
 must define it as `live` or `fixture`. Before customer deployment credentials
 are configured, the deployment job validates the selector/runtime tuple sets,
 canonical GitHub `owner/repository` identity, protected reference ARN sets and

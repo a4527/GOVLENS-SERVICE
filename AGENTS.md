@@ -18,7 +18,7 @@
 - Python 변경: `.venv/bin/python -m ruff check .`, `.venv/bin/python -m ruff format --check .`, 관련 `unittest discover -s tests/<unit|contract|integration|security>`.
 - Frontend 변경: `apps/frontend`에서 `npm ci && npm run build`.
 - Terraform/CloudFormation 변경: `fmt`·`validate`, `cfn-lint`, `tests/security/test_cloudformation_security.py`.
-- CI: `python-checks`, `frontend-checks`, `cloudformation-checks`, `m0-lambda-package`, `secret-scan`, `validate-pr-source`(`.github/workflows/`).
+- CI: `python-checks`, `frontend-checks`, `cloudformation-checks`, `lambda-package`, `secret-scan`, `validate-pr-source`(`.github/workflows/`).
 
 <a id="document-ownership"></a>
 
@@ -50,9 +50,9 @@
 | 사용자 정책 업로드·문서 형식·파싱·승인 경계 | [POLICY_INGESTION.md](docs/design/POLICY_INGESTION.md) |
 | System Context/Container (C4) | [architecture/](docs/design/architecture/) |
 | 이름 규칙(브랜치·커밋·코드·AWS 리소스) | [NAMING.md](docs/design/NAMING.md) |
-| 평가 품질 측정·모델 선택 근거 | [evaluations/](docs/evaluations/), [M4-GOLDEN-RELEASE-GATE.md](docs/evaluations/M4-GOLDEN-RELEASE-GATE.md) |
-| 고객 sandbox 연동·배포·인증 확인 | [sandbox/](docs/sandbox/) — 시작은 [CUSTOMER_SANDBOX_ONBOARDING.md](docs/sandbox/CUSTOMER_SANDBOX_ONBOARDING.md), 런타임 연결은 [M1-SANDBOX-INTEGRATION.md](docs/sandbox/M1-SANDBOX-INTEGRATION.md) |
-| 데모 실행·데모용 IaC·정책 커버리지 | [demo/](docs/demo/) — 시작은 [M4-DEMO-RUNBOOK.md](docs/demo/M4-DEMO-RUNBOOK.md) |
+| 평가 품질 측정·모델 선택 근거 | [evaluations/](docs/evaluations/), [GOLDEN-RELEASE-GATE.md](docs/evaluations/GOLDEN-RELEASE-GATE.md) |
+| 고객 sandbox 연동·배포·인증 확인 | [sandbox/](docs/sandbox/) — 시작은 [WORKLOAD_ONBOARDING.md](docs/sandbox/WORKLOAD_ONBOARDING.md), 런타임 연결은 [PLATFORM_DEPLOYMENT.md](docs/sandbox/PLATFORM_DEPLOYMENT.md) |
+| 데모 실행·데모용 IaC·정책 커버리지 | [demo/](docs/demo/) — 시작은 [DEMO-RUNBOOK.md](docs/demo/DEMO-RUNBOOK.md) |
 | 브랜치·PR·커밋·릴리스 게이트 | [CONTRIBUTING.md](CONTRIBUTING.md) |
 | 팀 프로젝트 기간 기록(읽기 전용) | [archive/](docs/archive/) — 현행 기준이 아니다. 필요한 내용은 현행 문서로 옮기고 링크한다 |
 

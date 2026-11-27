@@ -17,7 +17,7 @@ REPO_ROOT = Path(__file__).parents[2]
 if str(REPO_ROOT) not in sys.path:  # pragma: no cover - import path bootstrap
     sys.path.insert(0, str(REPO_ROOT))
 
-from scripts.validate_m1_deployment_config import (  # noqa: E402
+from scripts.validate_deployment_config import (  # noqa: E402
     DeploymentConfigurationError,
     validate_environment,
 )
@@ -45,13 +45,13 @@ TARGET = {
 
 def _environment(scope_entry: dict, *, target: dict | None = None) -> dict[str, str]:
     return {
-        "M1_ASSESSMENT_MODE": "live",
+        "ASSESSMENT_MODE": "live",
         "EXPECTED_AWS_ACCOUNT_ID": ACCOUNT,
         "AWS_REGION": REGION,
         "ASSESSMENT_SCOPE_JSON": json.dumps({"cust-001": [scope_entry]}),
-        "M1_ASSESSMENT_RUNTIME_JSON": json.dumps([target or TARGET]),
-        "M1_ASSESSMENT_SECRET_ARNS": f"{GITHUB_SECRET},{EXTERNAL_ID_SECRET}",
-        "M1_ASSESSMENT_READ_ROLE_ARNS": READ_ROLE,
+        "ASSESSMENT_RUNTIME_JSON": json.dumps([target or TARGET]),
+        "ASSESSMENT_SECRET_ARNS": f"{GITHUB_SECRET},{EXTERNAL_ID_SECRET}",
+        "ASSESSMENT_READ_ROLE_ARNS": READ_ROLE,
     }
 
 
@@ -162,7 +162,7 @@ class FixtureModeTest(unittest.TestCase):
     def test_fixture_mode_shape_checks_the_facts_without_a_target(self) -> None:
         """There is no runtime target to cross-check against, so the shape check is all there is."""
         environment = {
-            "M1_ASSESSMENT_MODE": "fixture",
+            "ASSESSMENT_MODE": "fixture",
             "EXPECTED_AWS_ACCOUNT_ID": ACCOUNT,
             "AWS_REGION": REGION,
             "ASSESSMENT_SCOPE_JSON": json.dumps(
@@ -196,7 +196,7 @@ class ScopeVocabularyIsSingleSourcedTest(unittest.TestCase):
 
     def test_the_gate_reads_the_service_definition(self) -> None:
         from apps.backend.api.scope import SCOPE_CONNECTION_FIELDS, SCOPE_SELECTOR_FIELDS
-        from scripts.validate_m1_deployment_config import SCOPE_DISPLAY_FIELDS, SCOPE_FIELDS
+        from scripts.validate_deployment_config import SCOPE_DISPLAY_FIELDS, SCOPE_FIELDS
 
         self.assertIs(SCOPE_FIELDS, SCOPE_SELECTOR_FIELDS)
         self.assertIs(SCOPE_DISPLAY_FIELDS, SCOPE_CONNECTION_FIELDS)

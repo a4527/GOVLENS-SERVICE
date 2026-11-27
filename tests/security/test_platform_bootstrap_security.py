@@ -6,9 +6,7 @@ from pathlib import Path
 import yaml
 from yaml.nodes import MappingNode, ScalarNode, SequenceNode
 
-TEMPLATE_PATH = (
-    Path(__file__).parents[2] / "infrastructure/cloudformation/m1-customer-bootstrap.yaml"
-)
+TEMPLATE_PATH = Path(__file__).parents[2] / "infrastructure/cloudformation/platform-bootstrap.yaml"
 
 
 def _construct_intrinsic(loader: yaml.SafeLoader, _suffix: str, node: yaml.Node) -> object:
@@ -87,7 +85,7 @@ class CustomerBootstrapSecurityTest(unittest.TestCase):
             statement for statement in statements if "s3:GetObject" in statement["Action"]
         )
         self.assertIn("s3:GetObjectVersion", artifact_read["Action"])
-        self.assertEqual(artifact_read["Resource"], "${LambdaCodeBucket.Arn}/lambda/m0/*")
+        self.assertEqual(artifact_read["Resource"], "${LambdaCodeBucket.Arn}/lambda/foundation/*")
 
     def test_github_role_can_read_scoped_deployment_diagnostics(self) -> None:
         policies = self.resources["GitHubActionsDeploymentRole"]["Properties"]["Policies"]

@@ -7,7 +7,7 @@ messages intentionally identify fields, never protected values.
 Run it as a module so the repository root is on the import path — this gate reads the
 resource-type allow-list from `agent.runtime`, which is the single source for it:
 
-    python -m scripts.validate_m1_deployment_config
+    python -m scripts.validate_deployment_config
 """
 
 from __future__ import annotations
@@ -69,9 +69,9 @@ class DeploymentConfigurationError(ValueError):
 
 
 def validate_environment(environment: Mapping[str, str]) -> str:
-    mode = _required(environment.get("M1_ASSESSMENT_MODE"), "M1_ASSESSMENT_MODE")
+    mode = _required(environment.get("ASSESSMENT_MODE"), "ASSESSMENT_MODE")
     if mode not in {"fixture", "live"}:
-        raise DeploymentConfigurationError("M1_ASSESSMENT_MODE must be fixture or live")
+        raise DeploymentConfigurationError("ASSESSMENT_MODE must be fixture or live")
 
     expected_account = _required(
         environment.get("EXPECTED_AWS_ACCOUNT_ID"), "EXPECTED_AWS_ACCOUNT_ID"
@@ -85,9 +85,9 @@ def validate_environment(environment: Mapping[str, str]) -> str:
         )
     scope = _scope(environment.get("ASSESSMENT_SCOPE_JSON"))
 
-    runtime_raw = environment.get("M1_ASSESSMENT_RUNTIME_JSON", "")
-    secret_arns_raw = environment.get("M1_ASSESSMENT_SECRET_ARNS", "")
-    read_role_arns_raw = environment.get("M1_ASSESSMENT_READ_ROLE_ARNS", "")
+    runtime_raw = environment.get("ASSESSMENT_RUNTIME_JSON", "")
+    secret_arns_raw = environment.get("ASSESSMENT_SECRET_ARNS", "")
+    read_role_arns_raw = environment.get("ASSESSMENT_READ_ROLE_ARNS", "")
     protected_values = (runtime_raw, secret_arns_raw, read_role_arns_raw)
     if not all(isinstance(value, str) for value in protected_values):
         raise DeploymentConfigurationError("M1 protected values must be strings")
@@ -103,9 +103,9 @@ def validate_environment(environment: Mapping[str, str]) -> str:
         missing = (
             name
             for name, value in (
-                ("M1_ASSESSMENT_RUNTIME_JSON", runtime_raw),
-                ("M1_ASSESSMENT_SECRET_ARNS", secret_arns_raw),
-                ("M1_ASSESSMENT_READ_ROLE_ARNS", read_role_arns_raw),
+                ("ASSESSMENT_RUNTIME_JSON", runtime_raw),
+                ("ASSESSMENT_SECRET_ARNS", secret_arns_raw),
+                ("ASSESSMENT_READ_ROLE_ARNS", read_role_arns_raw),
             )
             if not value
         )
@@ -122,8 +122,8 @@ def validate_environment(environment: Mapping[str, str]) -> str:
             "assessment scope and M1 runtime selector sets must match exactly"
         )
 
-    configured_secret_arns = _csv(secret_arns_raw, "M1_ASSESSMENT_SECRET_ARNS")
-    configured_read_roles = _csv(read_role_arns_raw, "M1_ASSESSMENT_READ_ROLE_ARNS")
+    configured_secret_arns = _csv(secret_arns_raw, "ASSESSMENT_SECRET_ARNS")
+    configured_read_roles = _csv(read_role_arns_raw, "ASSESSMENT_READ_ROLE_ARNS")
     github_secret_arns: set[str] = set()
     external_id_secret_arns: set[str] = set()
     target_read_roles: set[str] = set()
@@ -171,11 +171,11 @@ def validate_environment(environment: Mapping[str, str]) -> str:
     target_secret_arns = github_secret_arns | external_id_secret_arns
     if configured_secret_arns != target_secret_arns:
         raise DeploymentConfigurationError(
-            "M1_ASSESSMENT_SECRET_ARNS must match runtime secret references exactly"
+            "ASSESSMENT_SECRET_ARNS must match runtime secret references exactly"
         )
     if configured_read_roles != target_read_roles:
         raise DeploymentConfigurationError(
-            "M1_ASSESSMENT_READ_ROLE_ARNS must match runtime read roles exactly"
+            "ASSESSMENT_READ_ROLE_ARNS must match runtime read roles exactly"
         )
 
     # 표시값은 평가 대상과 같은 것을 가리켜야 한다. 화면이 repository A를 "연결됨"으로 보여주는데
@@ -251,9 +251,9 @@ def _connection_facts(entry: Mapping[str, object]) -> dict[str, str]:
 
 
 def _targets(raw: str) -> tuple[dict[str, str], ...]:
-    parsed = _json(raw, "M1_ASSESSMENT_RUNTIME_JSON")
+    parsed = _json(raw, "ASSESSMENT_RUNTIME_JSON")
     if not isinstance(parsed, list) or not parsed:
-        raise DeploymentConfigurationError("M1_ASSESSMENT_RUNTIME_JSON must be a non-empty array")
+        raise DeploymentConfigurationError("ASSESSMENT_RUNTIME_JSON must be a non-empty array")
     targets: list[dict[str, str]] = []
     for value in parsed:
         if not isinstance(value, dict):

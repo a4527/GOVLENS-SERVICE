@@ -394,11 +394,11 @@ class SyntheticS3Evaluator:
 
 def lambda_handler(event: Mapping[str, object], context: object) -> None:
     """Run live M1 only with an explicit protected configuration; otherwise M0 fixture mode."""
-    raw_m1_configuration = os.environ.get("M1_ASSESSMENT_RUNTIME_JSON")
+    raw_m1_configuration = os.environ.get("ASSESSMENT_RUNTIME_JSON")
     if raw_m1_configuration:
         _m1_handler(event, raw_m1_configuration)
         return
-    if os.environ.get("M0_SYNTHETIC_ASSESSMENT") != "true":
+    if os.environ.get("SYNTHETIC_ASSESSMENT") != "true":
         raise RuntimeError("M0 synthetic assessment mode is not enabled")
     try:
         import boto3

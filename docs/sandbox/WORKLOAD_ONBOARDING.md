@@ -16,16 +16,16 @@ The customer administrator supplies the following through the approved customer 
 | Region | Select the approved sandbox Region | It matches the platform's approved model profile; currently `us-east-1`. |
 | State backend | Create a state S3 bucket and DynamoDB lock table | Bucket is versioned, encrypted, TLS-only, and bucket-owner-enforced; lock table is dedicated to Terraform state. |
 | OIDC roles | Create separate Plan and Apply roles | Each trust policy is limited to the exact repository and allowed GitHub OIDC subject; neither is an administrator role. If the Organization customizes OIDC subjects, use the immutable-ID `sub` actually issued by GitHub. |
-| GitHub Environments | Create `customer-terraform-plan` and protected `customer-terraform-apply` | Apply has required reviewers; each role trust matches its exact Environment subject. Both hold the same state backend variables. |
+| GitHub Environments | Create `workload-plan` and protected `workload-apply` | Apply has required reviewers; each role trust matches its exact Environment subject. Both hold the same state backend variables. |
 | Platform connection | Approve the GitHub App installation and a read credential for workflow/run/artifact verification | App has `contents: write` and `pull_requests: write` only; it does not have `workflows: write`. |
 
-The state backend, the Plan/Apply OIDC roles, and the read role with its External ID Secret can be created by the customer-operated [`customer-onboarding.yaml`](../../infrastructure/cloudformation/customer-onboarding.yaml) stack instead of by hand; its outputs are the Environment variable values in section 2.
+The state backend, the Plan/Apply OIDC roles, and the read role with its External ID Secret can be created by the customer-operated [`workload-onboarding.yaml`](../../infrastructure/cloudformation/workload-onboarding.yaml) stack instead of by hand; its outputs are the Environment variable values in section 2.
 
 The customer owns workload-specific IAM permissions. A generic template cannot know which AWS services their Terraform will manage, so it must not grant `AdministratorAccess` or wildcard write access merely to make a first run easier.
 
 ## 2. Repository starter installation
 
-Copy the directory [`templates/customer-sandbox-terraform-repository`](../../templates/customer-sandbox-terraform-repository/) into the root of the new customer-owned repository. It is intentionally a template, not deployable customer IaC.
+Copy the directory [`templates/workload-terraform-repository`](../../templates/workload-terraform-repository/) into the root of the new customer-owned repository. It is intentionally a template, not deployable customer IaC.
 
 Before a first pull request, the customer administrator must:
 
@@ -40,8 +40,8 @@ Before a first pull request, the customer administrator must:
    | `ci/terraform/terraform-apply.yml` | `.github/workflows/terraform-apply.yml` |
    | `ci/terraform/canonical_plan_hash.py` | `ci/terraform/canonical_plan_hash.py` |
 
-5. Add GitHub Environment variables. `customer-terraform-plan` needs `AWS_REGION`, `TF_PLAN_ROLE_ARN`, `TF_STATE_BUCKET`, `TF_STATE_KEY`, `TF_LOCK_TABLE`, `SANDBOX_BUCKET_NAME`, and `OWNER_TAG` (value of the common `Owner` resource tag); `customer-terraform-apply` needs the same values except `TF_APPLY_ROLE_ARN` replaces `TF_PLAN_ROLE_ARN`. The state values, bucket name, and owner tag must be identical in both Environments.
-6. Configure the `customer-terraform-apply` GitHub Environment with required reviewers before enabling workflow dispatch. Keep Terraform `1.9.5`, the saved-plan-only apply, plan hash verification, and state `lineage`/`serial` verification unchanged.
+5. Add GitHub Environment variables. `workload-plan` needs `AWS_REGION`, `TF_PLAN_ROLE_ARN`, `TF_STATE_BUCKET`, `TF_STATE_KEY`, `TF_LOCK_TABLE`, `SANDBOX_BUCKET_NAME`, and `OWNER_TAG` (value of the common `Owner` resource tag); `workload-apply` needs the same values except `TF_APPLY_ROLE_ARN` replaces `TF_PLAN_ROLE_ARN`. The state values, bucket name, and owner tag must be identical in both Environments.
+6. Configure the `workload-apply` GitHub Environment with required reviewers before enabling workflow dispatch. Keep Terraform `1.9.5`, the saved-plan-only apply, plan hash verification, and state `lineage`/`serial` verification unchanged.
 
 The templates are explained in [the Terraform workflow guide](../../ci/terraform/README.md). The Foundation application deployment has a separate customer bootstrap and runbook; do not treat this Terraform workload state backend as Foundation state.
 

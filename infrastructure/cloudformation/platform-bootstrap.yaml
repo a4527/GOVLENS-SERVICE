@@ -1,10 +1,8 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: >-
-  Customer-operated M1 deployment bootstrap for the GitHub Actions OIDC
-  deployment role and CloudFormation execution role, referencing an already
-  existing immutable Lambda code bucket and the account's existing GitHub OIDC
-  provider. Use this variant when the Lambda code bucket and OIDC provider were
-  created by a prior deployment and must not be recreated.
+  Customer-operated, one-time M1 deployment bootstrap. It creates the narrowly
+  trusted GitHub Actions OIDC role, immutable Lambda code bucket, and the
+  CloudFormation execution role used to deploy the platform foundation.
 
 Parameters:
   ProjectName:
@@ -36,27 +34,88 @@ Parameters:
       repo:owner@owner-id/repository@repository-id when immutable subjects apply.
   ArtifactPreparationEnvironment:
     Type: String
-    Default: customer-sandbox-artifact
+    Default: platform-artifact
     MinLength: 1
     MaxLength: 255
     AllowedPattern: "^[A-Za-z0-9_.-]+$"
+    ConstraintDescription: Exact protected GitHub Environment for artifact preparation.
   DeploymentApprovalEnvironment:
     Type: String
-    Default: customer-sandbox-deploy
+    Default: platform-deploy
     MinLength: 1
     MaxLength: 255
     AllowedPattern: "^[A-Za-z0-9_.-]+$"
+    ConstraintDescription: Exact protected GitHub Environment for foundation deployment approval.
   ExistingGitHubOidcProviderArn:
     Type: String
-    AllowedPattern: "^arn:[^:]+:iam::[0-9]{12}:oidc-provider/token.actions.githubusercontent.com$"
-    ConstraintDescription: Supply the ARN of the account's existing GitHub OIDC provider.
-  ExistingLambdaCodeBucketName:
-    Type: String
-    MinLength: 3
-    MaxLength: 63
-    ConstraintDescription: Supply the name of the already existing immutable Lambda code bucket.
+    Default: ""
+    AllowedPattern: "^$|^arn:[^:]+:iam::[0-9]{12}:oidc-provider/token.actions.githubusercontent.com$"
+    ConstraintDescription: Leave blank to create the account's GitHub OIDC provider, or supply its ARN.
+
+Conditions:
+  CreateGitHubOidcProvider: !Equals [!Ref ExistingGitHubOidcProviderArn, ""]
 
 Resources:
+  GitHubActionsOidcProvider:
+    Type: AWS::IAM::OIDCProvider
+    Condition: CreateGitHubOidcProvider
+    Properties:
+      Url: https://token.actions.githubusercontent.com
+      ClientIdList: [sts.amazonaws.com]
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Component
+          Value: m1-bootstrap
+
+  LambdaCodeBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketName: !Sub "${ProjectName}-${PlatformEnvironment}-lambda-code-${AWS::AccountId}"
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref PlatformEnvironment
+        - Key: Component
+          Value: lambda-code
+
+  LambdaCodeBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      Bucket: !Ref LambdaCodeBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: DenyInsecureTransport
+            Effect: Deny
+            Principal: "*"
+            Action: "s3:*"
+            Resource:
+              - !GetAtt LambdaCodeBucket.Arn
+              - !Sub "${LambdaCodeBucket.Arn}/*"
+            Condition:
+              Bool:
+                aws:SecureTransport: "false"
+
   FoundationExecutionRole:
     Type: AWS::IAM::Role
     Properties:
@@ -133,7 +192,10 @@ Resources:
         Statement:
           - Effect: Allow
             Principal:
-              Federated: !Ref ExistingGitHubOidcProviderArn
+              Federated: !If
+                - CreateGitHubOidcProvider
+                - !Ref GitHubActionsOidcProvider
+                - !Ref ExistingGitHubOidcProviderArn
             Action: sts:AssumeRoleWithWebIdentity
             Condition:
               StringEquals:
@@ -148,10 +210,12 @@ Resources:
             Statement:
               - Effect: Allow
                 Action: [s3:GetBucketVersioning]
-                Resource: !Sub "arn:${AWS::Partition}:s3:::${ExistingLambdaCodeBucketName}"
+                Resource: !GetAtt LambdaCodeBucket.Arn
               - Effect: Allow
+                # The deployment job revalidates the immutable S3 Version ID before
+                # CloudFormation receives it, so it needs the version-specific read action.
                 Action: [s3:GetObject, s3:GetObjectVersion, s3:PutObject]
-                Resource: !Sub "arn:${AWS::Partition}:s3:::${ExistingLambdaCodeBucketName}/lambda/m0/*"
+                Resource: !Sub "${LambdaCodeBucket.Arn}/lambda/foundation/*"
               - Effect: Allow
                 Action: [cloudformation:CreateChangeSet, cloudformation:DeleteChangeSet,
                   cloudformation:DescribeChangeSet, cloudformation:DescribeStackEvents,
@@ -160,6 +224,8 @@ Resources:
                   cloudformation:ListChangeSets, cloudformation:ListStackResources,
                   cloudformation:TagResource, cloudformation:UntagResource]
                 Resource: !Sub "arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/${FoundationStackName}/*"
+              # DescribeEvents does not support resource-level IAM permissions. The
+              # workflow queries only failed events and excludes ResourceProperties.
               - Effect: Allow
                 Action: cloudformation:DescribeEvents
                 Resource: "*"
@@ -175,8 +241,20 @@ Resources:
 
 Outputs:
   GitHubActionsDeploymentRoleArn:
-    Description: Supply as role_to_assume to Deploy M0 Foundation.
+    Description: Supply as role_to_assume to Deploy Platform Foundation.
     Value: !GetAtt GitHubActionsDeploymentRole.Arn
   FoundationExecutionRoleArn:
-    Description: Supply as cloudformation_execution_role_arn to Deploy M0 Foundation.
+    Description: Supply as cloudformation_execution_role_arn to Deploy Platform Foundation.
     Value: !GetAtt FoundationExecutionRole.Arn
+  LambdaCodeBucketName:
+    Description: Supply as lambda_code_s3_bucket to Deploy Platform Foundation.
+    Value: !Ref LambdaCodeBucket
+  GitHubOidcProviderArn:
+    Description: GitHub OIDC provider used by the narrowly trusted deployment role.
+    Value: !If
+      - CreateGitHubOidcProvider
+      - !Ref GitHubActionsOidcProvider
+      - !Ref ExistingGitHubOidcProviderArn
+  FoundationStackName:
+    Description: The only foundation stack the deployment role may manage.
+    Value: !Ref FoundationStackName

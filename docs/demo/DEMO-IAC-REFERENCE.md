@@ -9,7 +9,7 @@
 경계(ADR-0007, ADR-0019 §6)를 우회한 채 데모만 성공하게 된다. 데모가 실제 고객 repository
 경계를 통과해야 데모 성공이 곧 제품 경로의 검증이 된다.
 
-`templates/customer-sandbox-terraform-repository/`는 고객 관리자가 별도 repository를 만들 때
+`templates/workload-terraform-repository/`는 고객 관리자가 별도 repository를 만들 때
 복사하는 **비배포용 시작 템플릿**일 뿐, 데모 Terraform 원문이나 customer configuration이 아니다.
 고객 account/state/role 값과 실제 데모 토글 IaC는 복사 이후 고객 repository에만 둔다.
 
@@ -39,7 +39,7 @@
   `ci/terraform/terraform-apply.yml`을 데모 저장소 `.github/workflows/`로 **복사**해 설치한다.
   Platform(GitHub App)은 이 파일을 만들거나 수정하지 않는다(App에 `workflows: write` 없음).
 - **protected Environment (§6):** apply job은 required reviewers가 붙은 protected Environment를
-  2차 게이트로 둔다(`customer-terraform-apply`).
+  2차 게이트로 둔다(`workload-apply`).
 - **OIDC Role 분리 (ADR-0007, §6):** plan job은 `TerraformPlanRole`, apply job은
   `TerraformDeploymentRole`을 assume한다. OIDC trust는 exact repository·environment subject로
   제한한다.
@@ -53,7 +53,7 @@
 저장소에서 재현해야 하기 때문이다(ADR-0021 §1). 각 토글은 여섯 S3 Rule
 (`fixtures/rules/rules.s3.json`, version `2026-08-31`) 중 정확히 하나에 대응한다.
 
-토글 이름은 `docs/demo/M4-DEMO-POLICY-COVERAGE.md`가 정한 **`demo_toggle` 안정 의미 키**를 그대로
+토글 이름은 `docs/demo/DEMO-POLICY-COVERAGE.md`가 정한 **`demo_toggle` 안정 의미 키**를 그대로
 쓴다. 그 여섯 키가 B → D 인계 계약이므로, 이 문서가 다른 이름을 예시로 들면 데모 저장소가 어느
 쪽을 따라야 하는지 갈린다.
 
@@ -76,7 +76,7 @@
 | `tls_only` | `S3-TLS-001` | MEDIUM | `aws:SecureTransport` deny 없음 | TLS-only deny statement | AUTOMATIC |
 | `access_logging` | `S3-LOGGING-001` | MEDIUM | `aws_s3_bucket_logging` 없음 | 서버 액세스 로깅 활성화 | MANUAL_ONLY |
 
-토글 조합은 데모 runbook(`docs/demo/M4-DEMO-RUNBOOK.md`)의 시나리오 단계에서 지정한다. 데모 저장소가
+토글 조합은 데모 runbook(`docs/demo/DEMO-RUNBOOK.md`)의 시나리오 단계에서 지정한다. 데모 저장소가
 Terraform 변수 이름을 다르게 쓰더라도 위 여섯 키에 1:1로 매핑해야 하며, 그 매핑을 데모 저장소
 README에 남긴다. 여섯 키 중 하나라도 구현하지 않거나 다른 Rule version을 대상으로 하면 M4 Demo
 Coverage를 충족하지 않는다.
@@ -95,7 +95,7 @@ Initial Assessment는 토글이 위반 상태(`false`)일 때, Post-Deploy Verif
 
 ## 관련 문서
 
-- 실행 절차: `docs/demo/M4-DEMO-RUNBOOK.md`
+- 실행 절차: `docs/demo/DEMO-RUNBOOK.md`
 - 실행 경계 결정: `docs/adr/ADR-0019-approved-deployment-execution-boundary.md`
 - 재평가·비교 결정: `docs/adr/ADR-0020-post-deploy-verification-and-comparison.md`
 - 데모·릴리스 gate: `docs/adr/ADR-0021-demo-and-release-readiness-gate.md`

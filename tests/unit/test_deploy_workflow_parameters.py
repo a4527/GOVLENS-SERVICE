@@ -16,8 +16,8 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).parents[2]
-TEMPLATE = ROOT / "infrastructure" / "cloudformation" / "m0-foundation.yaml"
-WORKFLOW = ROOT / ".github" / "workflows" / "deploy-m0-foundation.yml"
+TEMPLATE = ROOT / "infrastructure" / "cloudformation" / "platform-foundation.yaml"
+WORKFLOW = ROOT / ".github" / "workflows" / "deploy-platform-foundation.yml"
 
 #: 워크플로가 직접 계산해 넘기는 값. 운영자가 고를 수 있는 입력이 아니다.
 _DERIVED_PARAMETERS = {

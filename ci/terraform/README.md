@@ -21,12 +21,12 @@ template이다. Platform(GitHub App)은 이 파일을 만들거나 수정하지 
   대신 immutable organization/repository ID가 포함될 수 있으므로, GitHub가 실제 발급한 `sub` claim을
   trust policy에 그대로 사용한다.
 - **Protected Environment (§6):** apply job은 required reviewers가 붙은 protected Environment를
-  2차 게이트로 둔다. plan job도 별도 `customer-terraform-plan` Environment를 사용해 OIDC
+  2차 게이트로 둔다. plan job도 별도 `workload-plan` Environment를 사용해 OIDC
   subject와 backend 변수를 고정한다.
 - **Version pin (§1):** workflow는 Terraform version을 고정하고, repository는
   `.terraform.lock.hcl`을 커밋한다. Provider 버전이 흔들리면 같은 commit에서 다른 plan이 나온다.
-- **Environment variables:** `customer-terraform-plan`에는 `AWS_REGION`, `TF_PLAN_ROLE_ARN`,
-  `TF_STATE_BUCKET`, `TF_STATE_KEY`, `TF_LOCK_TABLE`을, `customer-terraform-apply`에는
+- **Environment variables:** `workload-plan`에는 `AWS_REGION`, `TF_PLAN_ROLE_ARN`,
+  `TF_STATE_BUCKET`, `TF_STATE_KEY`, `TF_LOCK_TABLE`을, `workload-apply`에는
   `AWS_REGION`, `TF_APPLY_ROLE_ARN`, `TF_STATE_BUCKET`, `TF_STATE_KEY`, `TF_LOCK_TABLE`을
   GitHub Environment variables로 설정한다. 두 Environment에는 Terraform input인
   `SANDBOX_BUCKET_NAME`과 공통 `Owner` 태그 값인 `OWNER_TAG`도 같은 값으로 설정한다. state 설정과 bucket 이름은 workflow input이나

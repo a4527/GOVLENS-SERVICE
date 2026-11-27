@@ -57,7 +57,7 @@ Parent Orchestrator가 메시지를 분류해 다음 중 하나를 돌려준다.
   서버 로그(`governance.api`)에만 남기고 응답 본문에는 노출하지 않는다. 400(잘못된 요청)·500(미분류
   서버 결함)과 구분된다.
 - 배선됨: handler branch + API Gateway route(`PostOrchestrateRoute`) + SPA 챗봇 UI.
-  라이브 반영은 `Deploy M0 Foundation` 재배포 시점을 따른다.
+  라이브 반영은 `Deploy Platform Foundation` 재배포 시점을 따른다.
 
 ## Customer policy ingestion endpoints
 

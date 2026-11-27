@@ -19,10 +19,10 @@ import yaml
 from yaml.nodes import MappingNode, ScalarNode, SequenceNode
 
 CLOUDFORMATION = Path(__file__).parents[2] / "infrastructure" / "cloudformation"
-FOUNDATION = CLOUDFORMATION / "m0-foundation.yaml"
+FOUNDATION = CLOUDFORMATION / "platform-foundation.yaml"
 BOOTSTRAPS = (
-    CLOUDFORMATION / "m1-customer-bootstrap.yaml",
-    CLOUDFORMATION / "m1-customer-bootstrap-roles.yaml",
+    CLOUDFORMATION / "platform-bootstrap.yaml",
+    CLOUDFORMATION / "platform-bootstrap-roles.yaml",
 )
 
 #: CloudFormation resource namespace → IAM service prefix whose actions create it. A namespace

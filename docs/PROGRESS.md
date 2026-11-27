@@ -1,6 +1,6 @@
 # Govlens 진행 현황
 
-마지막 갱신: 2026-11-23 · 개인 프로젝트 전환, 단일 계정 sandbox 결정(DEC-0030), 공통 태그 코드 반영(V-10)
+마지막 갱신: 2026-11-27 · V-11 병합, 배포 이름 `platform`/`workload` 정리(DEC-0031) 1단계
 
 현재 단계: MVP 폐루프(평가 → Finding → 조치 PR → plan → 사람 승인 → apply → 재평가)의 코드는 모두 들어가 있고 fixture·단위·통합 테스트로 검증된다. 실제 sandbox에서는 Initial Assessment와 조치 patch 생성까지 완주했고(2026-09-03), 승인 뒤 apply dispatch의 422 원인을 고친 상태(2026-09-07)에서 팀 작업이 멈췄다. 라이브 apply·Post-Deploy Verification은 아직 확인되지 않았다.
 
@@ -9,6 +9,7 @@
 | 작업 | 상태 | 확인된 범위와 다음 단계 |
 | --- | --- | --- |
 | 개인 프로젝트 전환 (D-01, V-01) | DONE | `main` + 작업 브랜치 PR로 CI 규칙 변경, 문서 구조 재편, 기준선 테스트 통과. [worklog](worklogs/2026-11-23.md) |
+| 배포 이름 정리 (D-03) | IN PROGRESS | 1단계(운영 이름) 반영, 2단계(내부 코드·fixture·테스트 이름) 남음([DEC-0031](DECISIONS.md#dec-0031)). [worklog](worklogs/2026-11-27.md) |
 | 운영 계정 결정 (V-02) | DONE | 팀 sandbox 계정은 접근 불가, 개인 계정 하나에 플랫폼·고객을 함께 두고 Foundation은 유지·workload는 매일 삭제([DEC-0030](DECISIONS.md#dec-0030)) |
 | 개인 계정 sandbox 구성 (V-10, V-11, V-03, V-12) | IN PROGRESS | 공통 태그·재실행 가능한 bootstrap(코드 반영, 라이브 확인은 V-03) → GitHub Environment·Secret 재구성 → workload teardown 절차. a4527 저장소에는 아직 Secret·Variable·Environment가 없다 |
 | 폐루프 라이브 E2E (V-04, V-05) | TODO | read Role 권한 반영 후 apply·Post-Deploy Verification 완주 |

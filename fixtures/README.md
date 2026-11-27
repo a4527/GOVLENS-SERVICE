@@ -41,4 +41,4 @@ Registry의 범위를 합쳐 본다(`load_remediation_policy`). 손으로 편집
 `terraform/` is intentionally empty. The WordPress/LAMP demo Terraform lives in a separate
 customer sandbox repository, not in this platform repository, so the apply path is validated
 through the real GitHub App / OIDC / approved-repository boundary (ADR-0021 §1). See
-`fixtures/terraform/README.md` and `docs/demo/M4-DEMO-IAC-REFERENCE.md`.
+`fixtures/terraform/README.md` and `docs/demo/DEMO-IAC-REFERENCE.md`.

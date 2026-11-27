@@ -2,7 +2,7 @@
 # Build a deterministic M0 Lambda ZIP with every import and synthetic fixture required at runtime.
 set -euo pipefail
 
-output_path=${1:?usage: scripts/package-m0-lambda.sh <output-zip-path>}
+output_path=${1:?usage: scripts/package-lambda.sh <output-zip-path>}
 repository_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 output_directory=$(dirname "${output_path}")
 output_name=$(basename "${output_path}")

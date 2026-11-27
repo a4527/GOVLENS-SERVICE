@@ -8,7 +8,7 @@ provider "aws" {
       Purpose     = "platform-onboarding"
       Owner       = var.owner_tag
       Project     = var.project_tag
-      Layer       = "customer-workload"
+      Layer       = "workload"
     }
   }
 }

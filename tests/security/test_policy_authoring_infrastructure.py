@@ -12,7 +12,7 @@ from pathlib import Path
 
 import yaml
 
-TEMPLATE_PATH = Path(__file__).parents[2] / "infrastructure/cloudformation/m0-foundation.yaml"
+TEMPLATE_PATH = Path(__file__).parents[2] / "infrastructure/cloudformation/platform-foundation.yaml"
 
 
 class _CloudFormationLoader(yaml.SafeLoader):
@@ -154,7 +154,7 @@ class PolicyAuthoringInfrastructureTest(unittest.TestCase):
         # 고객 AWS 계정을 읽으려면 이 둘 중 하나가 필요하다. 둘 다 없어야 한다.
         self.assertNotIn("sts:AssumeRole", granted)
         self.assertNotIn("secretsmanager:GetSecretValue", granted)
-        self.assertNotIn("M1AssessmentReadRoleArns", repr(role["Properties"]["Policies"]))
+        self.assertNotIn("AssessmentReadRoleArns", repr(role["Properties"]["Policies"]))
 
     def test_the_assessment_worker_role_cannot_receive_authoring_messages(self) -> None:
         statements = _statements(self.resources["WorkflowRuntimeRole"], "WorkflowStateAndDispatch")

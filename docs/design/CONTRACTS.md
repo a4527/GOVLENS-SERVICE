@@ -190,7 +190,7 @@ sub-read가 거부되면(권한 없음) 그것은 값이 아니라 read 실패�
 없음"과 구별할 수 없다. **Assessment Worker와 Deployment Worker는 같은 factory로 이 도구를 만든다.**
 한쪽만 읽을 수 있는 유형이 있으면 배포 후 검증이 그 유형을 조용히 건너뛴다.
 
-평가 대상 리소스는 배포 설정(`M1_ASSESSMENT_RUNTIME_JSON`)의 승인 목록이다. 공개 Assessment API는
+평가 대상 리소스는 배포 설정(`ASSESSMENT_RUNTIME_JSON`)의 승인 목록이다. 공개 Assessment API는
 Repository와 Policy Profile만 받으며, Worker가 그 요청을 승인 목록의 모든 리소스로 확장해 하나의
 완전한 평가 계획을 저장한다. 내부 또는 레거시 Initial Assessment record가 `resource_type`/`resource_id`로
 그중 하나를 지목할 수 있고, 목록 밖의 리소스는 거부된다. 레거시 단일 `s3_bucket_id` 설정은 그대로
@@ -818,7 +818,7 @@ Bedrock 결과(60 calls)이고, DRIFT 6 Case는 같은 `(rule_id, run_number)`�
 `scripts/export_golden_observations.py`다. 같은 `BedrockStructuredEvaluator`로 평가하고 같은
 `derive_drift_results()`로 DRIFT를 파생하므로 producer와 consumer가 한 코드에서 정합한다. producer는
 `runtime_mode`를 호출자 선언으로만 채우며, `--customer-sandbox` 밖의 실행은 `DRY_RUN`으로 표시해 consumer가
-거부하게 한다. 실행 절차는 `docs/evaluations/M4-GOLDEN-RELEASE-GATE.md`에 있다.
+거부하게 한다. 실행 절차는 `docs/evaluations/GOLDEN-RELEASE-GATE.md`에 있다.
 
 `apps/backend/assessment/release_quality.py`의 exact-key parser가 observation bundle의 실행 ID,
 platform commit, repository/deployment/artifact digest, exact Model Profile, case/run/rule version,

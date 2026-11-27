@@ -6,7 +6,7 @@ token은 1시간 만에 만료되므로 평가를 돌릴 때마다 사람이 재
 private key**로 바꾸면 worker가 필요할 때 스스로 발급한다. 사람의 개입은 key를 한 번 넣는 것으로
 끝난다.
 
-**왜 서명을 직접 구현하는가.** 함수 ZIP은 third-party 의존성을 갖지 않는다(`scripts/package-m0-lambda.sh`)
+**왜 서명을 직접 구현하는가.** 함수 ZIP은 third-party 의존성을 갖지 않는다(`scripts/package-lambda.sh`)
 — 그것이 결정적 빌드와 승인 경계의 전제다. Lambda Layer에도 `cryptography`는 없다(배포된 Layer의
 top-level 패키지 76개를 확인했다). RS256은 RSA PKCS#1 v1.5 서명이고, 그 연산은 결정적이며 난수도
 비밀 유지 로직도 필요 없다 — 패딩된 다이제스트를 개인 지수로 거듭제곱하는 것이 전부다. Python의

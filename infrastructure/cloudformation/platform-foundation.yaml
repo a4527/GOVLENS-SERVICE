@@ -39,18 +39,18 @@ Parameters:
     Default: "{}"
     NoEcho: true
     ConstraintDescription: Customer-scoped approved repository/profile selector map for M0.
-  M1AssessmentRuntimeJson:
+  AssessmentRuntimeJson:
     Type: String
     Default: ""
     NoEcho: true
     ConstraintDescription: Optional protected M1 customer/repository target configuration; empty preserves fixture mode.
-  M1AssessmentSecretArns:
+  AssessmentSecretArns:
     Type: String
     Default: ""
     NoEcho: true
     AllowedPattern: '^$|^arn:[^:,]+:secretsmanager:[^:,]+:[0-9]{12}:secret:[^,]+(,arn:[^:,]+:secretsmanager:[^:,]+:[0-9]{12}:secret:[^,]+)*$'
     ConstraintDescription: Comma-separated non-empty Secrets Manager ARNs or empty for fixture mode.
-  M1AssessmentReadRoleArns:
+  AssessmentReadRoleArns:
     Type: String
     Default: ""
     NoEcho: true
@@ -94,7 +94,7 @@ Parameters:
     ConstraintDescription: Exact CloudFront distribution ID for the approved frontend, or empty to disable frontend deployment.
   FrontendDeploymentEnvironment:
     Type: String
-    Default: customer-sandbox-deploy
+    Default: platform-deploy
     AllowedPattern: '^[A-Za-z0-9_.-]{1,255}$'
     ConstraintDescription: Protected GitHub Environment trusted by the frontend deployment role.
   GitHubOidcSubjectPrefix:
@@ -105,18 +105,18 @@ Parameters:
     ConstraintDescription: Exact name-based or immutable-ID GitHub OIDC subject prefix trusted for deployment.
 
 Rules:
-  M1AssessmentInputsAllOrNone:
+  AssessmentInputsAllOrNone:
     Assertions:
       - Assert:
           Fn::Or:
             - Fn::And:
-                - Fn::Equals: [!Ref M1AssessmentRuntimeJson, ""]
-                - Fn::Equals: [!Ref M1AssessmentSecretArns, ""]
-                - Fn::Equals: [!Ref M1AssessmentReadRoleArns, ""]
+                - Fn::Equals: [!Ref AssessmentRuntimeJson, ""]
+                - Fn::Equals: [!Ref AssessmentSecretArns, ""]
+                - Fn::Equals: [!Ref AssessmentReadRoleArns, ""]
             - Fn::And:
-                - Fn::Not: [!Equals [!Ref M1AssessmentRuntimeJson, ""]]
-                - Fn::Not: [!Equals [!Ref M1AssessmentSecretArns, ""]]
-                - Fn::Not: [!Equals [!Ref M1AssessmentReadRoleArns, ""]]
+                - Fn::Not: [!Equals [!Ref AssessmentRuntimeJson, ""]]
+                - Fn::Not: [!Equals [!Ref AssessmentSecretArns, ""]]
+                - Fn::Not: [!Equals [!Ref AssessmentReadRoleArns, ""]]
         AssertDescription: >-
           M1 runtime JSON, secret ARNs, and read-role ARNs must be either all empty
           for fixture mode or all non-empty for live mode.
@@ -134,8 +134,8 @@ Rules:
           Deployment runtime JSON and GitHub secret ARNs must be either both empty or
           both non-empty. Target configuration without a readable token would resolve
           no commit while presenting as configured.
-  M1AssessmentRegionMatchesModelProfile:
-    RuleCondition: !Not [!Equals [!Ref M1AssessmentRuntimeJson, ""]]
+  AssessmentRegionMatchesModelProfile:
+    RuleCondition: !Not [!Equals [!Ref AssessmentRuntimeJson, ""]]
     Assertions:
       - Assert: !Equals [!Ref "AWS::Region", us-east-1]
         AssertDescription: >-
@@ -166,7 +166,7 @@ Conditions:
   LocalDevelopmentLogoutAllowed: !And
     - !Equals [!Ref Environment, "sandbox"]
     - !Not [!Equals [!Ref FrontendLogoutUrl, "http://localhost:5173"]]
-  M1LiveAssessmentEnabled: !Not [!Equals [!Ref M1AssessmentRuntimeJson, ""]]
+  LiveAssessmentEnabled: !Not [!Equals [!Ref AssessmentRuntimeJson, ""]]
   DeploymentCommitResolutionEnabled: !Not [!Equals [!Ref DeploymentRuntimeJson, ""]]
   PolicyAuthoringEnabled: !Not [!Equals [!Ref PolicyAuthoringModelProfileJson, ""]]
   FrontendDeploymentEnabled: !And
@@ -627,17 +627,17 @@ Resources:
         # Do not create an empty IAM policy in fixture mode: IAM rejects an empty
         # Statement array before the foundation can be deployed.
         - !If
-          - M1LiveAssessmentEnabled
-          - PolicyName: M1ReadOnlyAssessmentInputs
+          - LiveAssessmentEnabled
+          - PolicyName: ReadOnlyAssessmentInputs
             PolicyDocument:
               Version: "2012-10-17"
               Statement:
                 - Effect: Allow
                   Action: secretsmanager:GetSecretValue
-                  Resource: !Split [",", !Ref M1AssessmentSecretArns]
+                  Resource: !Split [",", !Ref AssessmentSecretArns]
                 - Effect: Allow
                   Action: sts:AssumeRole
-                  Resource: !Split [",", !Ref M1AssessmentReadRoleArns]
+                  Resource: !Split [",", !Ref AssessmentReadRoleArns]
                 - Effect: Allow
                   Action: bedrock:InvokeModel
                   Resource:
@@ -923,8 +923,8 @@ Resources:
       Environment:
         Variables:
           METADATA_TABLE_NAME: !Ref MetadataTable
-          M0_SYNTHETIC_ASSESSMENT: "true"
-          M1_ASSESSMENT_RUNTIME_JSON: !Ref M1AssessmentRuntimeJson
+          SYNTHETIC_ASSESSMENT: "true"
+          ASSESSMENT_RUNTIME_JSON: !Ref AssessmentRuntimeJson
   AssessmentQueueEventSource:
     Type: AWS::Lambda::EventSourceMapping
     Properties:

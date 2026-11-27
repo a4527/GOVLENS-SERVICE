@@ -1,4 +1,4 @@
-name: Deploy M0 Foundation
+name: Deploy Platform Foundation
 
 on:
   workflow_dispatch:
@@ -79,7 +79,7 @@ jobs:
           python-version: "3.12"
 
       - name: Build and verify the Lambda ZIP
-        run: bash scripts/package-m0-lambda.sh "${RUNNER_TEMP}/m0-lambda.zip"
+        run: bash scripts/package-lambda.sh "${RUNNER_TEMP}/lambda.zip"
 
       - name: Build and verify the LangGraph Layer ZIP
         run: bash scripts/build-langgraph-layer.sh "${RUNNER_TEMP}/langgraph-layer.zip"
@@ -97,7 +97,7 @@ jobs:
         with:
           aws-region: ${{ inputs.aws_region }}
           role-to-assume: ${{ inputs.role_to_assume }}
-          role-session-name: m0-artifact-prepare
+          role-session-name: foundation-artifact-prepare
           allowed-account-ids: ${{ vars.EXPECTED_AWS_ACCOUNT_ID }}
           mask-aws-account-id: true
 
@@ -118,12 +118,12 @@ jobs:
       - name: Create or verify immutable Lambda artifact
         id: bind-artifact
         env:
-          LAMBDA_CODE_S3_KEY: lambda/m0/${{ github.sha }}.zip
+          LAMBDA_CODE_S3_KEY: lambda/foundation/${{ github.sha }}.zip
         run: |
           set -euo pipefail
 
-          zip_sha256_hex=$(sha256sum "${RUNNER_TEMP}/m0-lambda.zip" | cut -d ' ' -f1)
-          zip_sha256_base64=$(openssl dgst -sha256 -binary "${RUNNER_TEMP}/m0-lambda.zip" | base64)
+          zip_sha256_hex=$(sha256sum "${RUNNER_TEMP}/lambda.zip" | cut -d ' ' -f1)
+          zip_sha256_base64=$(openssl dgst -sha256 -binary "${RUNNER_TEMP}/lambda.zip" | base64)
           put_error="${RUNNER_TEMP}/put-object.error"
 
           set +e
@@ -131,7 +131,7 @@ jobs:
             aws s3api put-object \
               --bucket "${LAMBDA_CODE_S3_BUCKET}" \
               --key "${LAMBDA_CODE_S3_KEY}" \
-              --body "${RUNNER_TEMP}/m0-lambda.zip" \
+              --body "${RUNNER_TEMP}/lambda.zip" \
               --if-none-match "*" \
               --expected-bucket-owner "${EXPECTED_AWS_ACCOUNT_ID}" \
               --checksum-algorithm SHA256 \
@@ -194,7 +194,7 @@ jobs:
           layer_sha256_hex=$(sha256sum "${RUNNER_TEMP}/langgraph-layer.zip" | cut -d ' ' -f1)
           layer_sha256_base64=$(openssl dgst -sha256 -binary "${RUNNER_TEMP}/langgraph-layer.zip" | base64)
           # Content-addressed key: identical dependency sets reuse the same object.
-          layer_key="lambda/m0/langgraph-layer-${layer_sha256_hex}.zip"
+          layer_key="lambda/foundation/langgraph-layer-${layer_sha256_hex}.zip"
           put_error="${RUNNER_TEMP}/put-layer.error"
 
           set +e
@@ -264,10 +264,10 @@ jobs:
       LANGGRAPH_LAYER_S3_KEY: ${{ needs.prepare-artifact.outputs.langgraph_layer_s3_key }}
       LANGGRAPH_LAYER_S3_OBJECT_VERSION: ${{ needs.prepare-artifact.outputs.langgraph_layer_s3_object_version }}
       ASSESSMENT_SCOPE_JSON: ${{ inputs.assessment_scope_json }}
-      M1_ASSESSMENT_MODE: ${{ vars.M1_ASSESSMENT_MODE }}
-      M1_ASSESSMENT_RUNTIME_JSON: ${{ secrets.M1_ASSESSMENT_RUNTIME_JSON }}
-      M1_ASSESSMENT_SECRET_ARNS: ${{ secrets.M1_ASSESSMENT_SECRET_ARNS }}
-      M1_ASSESSMENT_READ_ROLE_ARNS: ${{ secrets.M1_ASSESSMENT_READ_ROLE_ARNS }}
+      ASSESSMENT_MODE: ${{ vars.ASSESSMENT_MODE }}
+      ASSESSMENT_RUNTIME_JSON: ${{ secrets.ASSESSMENT_RUNTIME_JSON }}
+      ASSESSMENT_SECRET_ARNS: ${{ secrets.ASSESSMENT_SECRET_ARNS }}
+      ASSESSMENT_READ_ROLE_ARNS: ${{ secrets.ASSESSMENT_READ_ROLE_ARNS }}
       # 승인된 배포 대상과 그 GitHub token. 둘은 템플릿 Rule
       # `DeploymentCommitResolutionAllOrNone`이 all-or-none으로 강제하므로 같은 Environment에서
       # 함께 정의한다. 비어 있으면 TERRAFORM_PATCH의 PR write와 apply 대상 commit 해석이
@@ -322,7 +322,7 @@ jobs:
           fi
 
       - name: Validate assessment deployment configuration
-        run: python3 -m scripts.validate_m1_deployment_config
+        run: python3 -m scripts.validate_deployment_config
 
       - name: Configure customer deployment credentials
         # v6.2.3
@@ -330,7 +330,7 @@ jobs:
         with:
           aws-region: ${{ inputs.aws_region }}
           role-to-assume: ${{ inputs.role_to_assume }}
-          role-session-name: m0-foundation-deploy
+          role-session-name: platform-foundation-deploy
           allowed-account-ids: ${{ vars.EXPECTED_AWS_ACCOUNT_ID }}
           mask-aws-account-id: true
 
@@ -362,9 +362,9 @@ jobs:
           # 계속 자란다 — 실제로 한도를 넘어 배포가 죽었다. prefix는 배포 role이 이미 쓰기
           # 권한을 가진 경로라 bootstrap role을 다시 손대지 않아도 된다.
           aws cloudformation deploy \
-            --template-file infrastructure/cloudformation/m0-foundation.yaml \
+            --template-file infrastructure/cloudformation/platform-foundation.yaml \
             --s3-bucket "${LAMBDA_CODE_S3_BUCKET}" \
-            --s3-prefix lambda/m0 \
+            --s3-prefix lambda/foundation \
             --stack-name "${STACK_NAME}" \
             --role-arn "${CLOUDFORMATION_EXECUTION_ROLE_ARN}" \
             --capabilities CAPABILITY_NAMED_IAM \
@@ -377,9 +377,9 @@ jobs:
               "LangGraphLayerS3Key=${LANGGRAPH_LAYER_S3_KEY}" \
               "LangGraphLayerS3ObjectVersion=${LANGGRAPH_LAYER_S3_OBJECT_VERSION}" \
               "AssessmentScopeJson=${ASSESSMENT_SCOPE_JSON}" \
-              "M1AssessmentRuntimeJson=${M1_ASSESSMENT_RUNTIME_JSON}" \
-              "M1AssessmentSecretArns=${M1_ASSESSMENT_SECRET_ARNS}" \
-              "M1AssessmentReadRoleArns=${M1_ASSESSMENT_READ_ROLE_ARNS}" \
+              "AssessmentRuntimeJson=${ASSESSMENT_RUNTIME_JSON}" \
+              "AssessmentSecretArns=${ASSESSMENT_SECRET_ARNS}" \
+              "AssessmentReadRoleArns=${ASSESSMENT_READ_ROLE_ARNS}" \
               "DeploymentRuntimeJson=${DEPLOYMENT_RUNTIME_JSON}" \
               "DeploymentGitHubSecretArns=${DEPLOYMENT_GITHUB_SECRET_ARNS}" \
               "PolicyAuthoringModelProfileJson=${POLICY_AUTHORING_MODEL_PROFILE_JSON}" \

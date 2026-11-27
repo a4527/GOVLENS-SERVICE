@@ -60,6 +60,12 @@
 - 결정일: 2026-11-23 · 상태: Accepted
 - 결정·이유: 비용 때문에 플랫폼(bootstrap·Foundation)과 고객 쪽(onboarding·workload)을 개인 AWS 계정 하나에 둔다(팀 기간 sandbox와 같은 구성, 이전 팀 계정은 쓰지 않는다). Foundation은 유휴 비용이 거의 없고 이름 고정 `Retain` 리소스(DynamoDB·S3·Cognito·CloudTrail) 때문에 재생성이 실패하므로 유지하고, 비용이 드는 customer-demo workload(EC2·RDS·ALB)만 작업일마다 `terraform apply`/`destroy`한다. 계정 정리 가능성에 대비해 고객 배포 경로(`m1-customer-bootstrap` → Foundation → 고객 onboarding)를 그대로 재실행하는 bootstrap을 두고, 모든 리소스에 공통 태그 `Owner`·`Project`·`Layer`(`bootstrap`|`foundation`|`customer-onboarding`|`customer-workload`)를 붙인다. 계정 ID·`Owner` 값은 공개 저장소에 두지 않고 배포 파라미터·GitHub Variable로 주입한다. 계정 정리로 Foundation의 Retain 리소스가 남으면 sandbox에서는 확인 후 삭제하고 재배포한다(데이터 손실 수용, 고객 환경은 CloudFormation import로 복구).
 
+<a id="dec-0031"></a>
+### DEC-0031 · 배포 이름은 `platform`(Govlens 서비스)과 `workload`(평가 대상)로 나누고 마일스톤 번호를 뺀다
+
+- 결정일: 2026-11-27 · 상태: Accepted · 대체: DEC-0030의 Layer 태그 값 `customer-onboarding`·`customer-workload` → `workload-onboarding`·`workload`
+- 결정·이유: `customer`가 제품 도메인의 Customer(Govlens를 배포해 쓰는 회사)와 평가 대상 workload를 함께 가리키고, 팀 기간 마일스톤 번호(`m0`·`m1`·`m4`)가 이름에 남아 단일 계정 운영에서 무엇이 서비스이고 무엇이 평가 대상인지 읽기 어려웠다. 아직 배포된 리소스·GitHub 설정이 없어 지금 바꾸는 비용이 가장 적다. 서비스 배포 Environment `customer-sandbox-artifact`·`customer-sandbox-deploy` → `platform-artifact`·`platform-deploy`, workload Environment `customer-terraform-plan`·`customer-terraform-apply` → `workload-plan`·`workload-apply`, 템플릿 `m1-customer-bootstrap`·`m0-foundation`·`customer-onboarding` → `platform-bootstrap`·`platform-foundation`·`workload-onboarding`, 배포 변수 `M1_ASSESSMENT_*` → `ASSESSMENT_*`. 제품 도메인의 Customer, 저장소 이름, ADR·archive·worklog 등 기록 본문, 평가 기록과 연결된 버전 ID(모델 profile·rubric·Golden Case ID)는 바꾸지 않는다. 내부 코드·fixture·테스트 이름의 마일스톤 번호도 같은 원칙으로 뺀다.
+
 ## 기록·변경 규칙
 
 - 사용자와의 핵심 약속, 되돌리기 큰 비용이 드는 선택, 보안·데이터 경계, 결론만으로는 오해하기 쉬운 중요한 절충은 ADR로 남긴다. 여러 구성 요소에 영향을 주거나 논의가 길었다는 사실만으로 ADR을 만들지 않는다.
