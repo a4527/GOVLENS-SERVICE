@@ -40,60 +40,11 @@ Policy / ISMS-P + Customer IaC + AWS Actual
 
 ## 아키텍처 개요
 
-```mermaid
-flowchart LR
-  subgraph EDGE["1 · Edge & API"]
-    direction TB
-    U([User]) --> SPA["React SPA<br/>S3 + CloudFront"]
-    SPA --> COG["Cognito<br/>JWT · PreTokenGeneration"]
-    COG --> APIGW["API Gateway<br/>HTTP API · JWT authorizer"]
-    APIGW --> API["API Lambda (단일 함수)<br/>도메인 API · Job/Outbox 저장<br/>/orchestrate → LangGraph Parent<br/>(자연어 라우팅 + Policy Q&A, 동기 ≤30s)"]
-  end
+<p align="center">
+  <img src="docs/design/architecture/architecture.svg" alt="Govlens 아키텍처: Edge·API, 비동기 워크플로, AI·상태·Artifact, 배포 연동과 Workload" width="100%">
+</p>
 
-  subgraph ASYNC["2 · Async Workflow (SQS Standard + DLQ, 3회 재시도 후)"]
-    direction TB
-    SWEEP["Outbox Sweeper<br/>EventBridge rate 1m"]
-    QP[[Policy Authoring Queue]] --> WP["Policy Authoring Worker"]
-    QA[[Assessment Queue]] --> WA["Assessment Worker"]
-    QR[[Remediation Queue]] --> WR["Remediation Worker"]
-    QD[[Deployment Queue]] --> WD["Deployment Worker"]
-  end
-
-  subgraph STATE["3 · AI · State · Artifacts"]
-    direction TB
-    BR["Bedrock<br/>역할별 Model Profile"]
-    DDB[("DynamoDB<br/>Job · revision-bound checkpoint<br/>· metadata · outbox")]
-    S3[("S3 Artifact<br/>policy 원본 · snapshot<br/>· report · patch · plan")]
-    TRAIL["CloudTrail data events<br/>+ audit bucket · CloudWatch"]
-    TOOL["AWS Resource Tool<br/>(Read-only, ExternalId)"]
-  end
-
-  subgraph DEPLOY["4 · Deployment Integration"]
-    direction TB
-    GHA["GitHub App<br/>contents · pull_requests"] --> REPO["Workload Terraform Repo"]
-    REPO --> ACT["GitHub Actions (OIDC)<br/>CI · plan · approved apply"]
-    ACT -- "terraform-apply-completed" --> EB["EventBridge"]
-    EB --> AC["Apply Completion Lambda"]
-  end
-
-  subgraph WL["Workload (EC2 · RDS · ALB · S3)"]
-    RES["평가·배포 대상 리소스"]
-  end
-
-  API --> QP & QA & QR & QD
-  SWEEP -. 미전송 outbox 재전송 .-> QA & QR & QD
-  API & WP & WA & WR & WD --- DDB
-  API & WP & WA & WR & WD --- S3
-  S3 -.-> TRAIL
-  API -. Parent .-> BR
-  WP & WA & WR -.-> BR
-  WA & WD --> TOOL -- read-only --> RES
-  WR --> GHA
-  WD -- "plan / apply dispatch" --> ACT
-  AC --> QD
-  WD -- "Post-Deploy 재평가" --> QA
-  ACT == "승인된 apply만 write" ==> RES
-```
+> 그림은 `scripts/generate_architecture_diagram.py`로 생성합니다. 배포 구조(`infrastructure/cloudformation/platform-foundation.yaml`)가 바뀌면 함께 갱신하세요.
 
 - **명시적 UI/API 요청**은 해당 Workflow로 직접 진입하고, **자연어 요청**만 `/orchestrate`의 Parent Orchestrator가 의도·후보 Scope를 해석해 Workflow를 제안합니다. Parent는 별도 Lambda가 아니라 API Lambda 안에서 동기로 실행됩니다.
 - API는 Job과 Outbox를 DynamoDB에 저장한 뒤 큐에 최소 `WorkflowTask`만 보냅니다. 상태의 정본은 DynamoDB와 S3이며, SQS는 전달 수단입니다.
