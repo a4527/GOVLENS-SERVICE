@@ -67,8 +67,24 @@ check_account() {
 
 tags() { echo "Owner=${OWNER_TAG}" "Project=${PROJECT_NAME}" "Layer=$1"; }
 
+# A stack left in REVIEW_IN_PROGRESS by an aborted preview has no resources yet; treat it as
+# absent so a re-run still detects reusable resources (e.g. an existing OIDC provider).
 stack_exists() {
-  aws cloudformation describe-stacks --stack-name "$1" >/dev/null 2>&1
+  local status
+  status=$(aws cloudformation describe-stacks --stack-name "$1" \
+    --query 'Stacks[0].StackStatus' --output text 2>/dev/null) || return 1
+  [[ "${status}" != REVIEW_IN_PROGRESS ]]
+}
+
+# Prints the resource changes of the newest change set of a stack.
+show_change_set() {
+  local change_set
+  change_set=$(aws cloudformation list-change-sets --stack-name "$1" \
+    --query 'reverse(sort_by(Summaries, &CreationTime))[0].ChangeSetId' --output text)
+  [[ -n "${change_set}" && "${change_set}" != None ]] || return 0
+  aws cloudformation describe-change-set --change-set-name "${change_set}" \
+    --query 'Changes[].ResourceChange.[Action, LogicalResourceId, ResourceType, Replacement]' \
+    --output table
 }
 
 output() {
@@ -87,6 +103,7 @@ deploy() {
   (($# > 0)) && args+=(--parameter-overrides "$@")
   if [[ "${ASSUME_YES}" != true ]]; then
     aws cloudformation deploy "${args[@]}" --no-execute-changeset
+    show_change_set "${stack}"
     read -r -p "Execute the change set above for ${stack}? [y/N] " answer
     [[ "${answer}" == y ]] || die "aborted by user"
   fi
