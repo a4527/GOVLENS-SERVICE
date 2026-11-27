@@ -7,7 +7,7 @@ workflow only after customer review.
 ## 0. Customer-operated bootstrap
 
 Before configuring a repository workflow, the customer administrator runs
-`infrastructure/cloudformation/m1-customer-bootstrap.yaml` once in the target
+`infrastructure/cloudformation/platform-bootstrap.yaml` once in the target
 AWS sandbox account using the customer's approved Console, CloudFormation, or
 customer CI path. The bootstrap is deliberately separate from GitHub Actions:
 it establishes the first trust boundary rather than assuming one already
@@ -21,8 +21,8 @@ Supply these non-secret parameters:
 | `PlatformEnvironment` | Short foundation environment, normally `sandbox`. |
 | `FoundationStackName` | Exact stack name that the deployment role may manage. |
 | `GitHubOidcSubjectPrefix` | `repo:<owner>/<repository>` for the repository running this workflow; use the immutable owner/repository-ID form when the repository uses immutable OIDC subjects. |
-| `ArtifactPreparationEnvironment` | `customer-sandbox-artifact` unless the customer chose a different protected Environment. |
-| `DeploymentApprovalEnvironment` | `customer-sandbox-deploy` unless the customer chose a different protected Environment. |
+| `ArtifactPreparationEnvironment` | `platform-artifact` unless the customer chose a different protected Environment. |
+| `DeploymentApprovalEnvironment` | `platform-deploy` unless the customer chose a different protected Environment. |
 | `ExistingGitHubOidcProviderArn` | Leave empty only when the account has no GitHub OIDC provider; otherwise use the existing provider ARN. |
 
 Apply stack-level tags `Owner=<owner>`, `Project=<ProjectName>`, and
@@ -45,7 +45,7 @@ foundation deployment (Console: CloudFormation → the bootstrap stack → Updat
 Replace current template; or `aws cloudformation deploy` with
 `--capabilities CAPABILITY_NAMED_IAM`, the same parameters, and the same `--tags`). The account
 that already has the Lambda code bucket and OIDC provider uses the
-`m1-customer-bootstrap-roles.yaml` variant. It does not create the workload repository,
+`platform-bootstrap-roles.yaml` variant. It does not create the workload repository,
 GitHub App token, customer read role, or application secrets.
 
 ## Protected deployment Environment
@@ -59,7 +59,7 @@ The deployment Environment also defines `OWNER_TAG`, the non-secret value of the
 `Project=<ProjectName>`, and `Layer=foundation` and rejects an empty value.
 
 The second, artifact-deployment GitHub Environment also defines the non-secret
-`M1_ASSESSMENT_MODE` variable. Set it explicitly to `live` for this runbook or
+`ASSESSMENT_MODE` variable. Set it explicitly to `live` for this runbook or
 `fixture` only for an intentionally synthetic deployment. A missing or unknown
 mode is rejected before customer deployment credentials are configured. The
 artifact-preparation identity is a separate, earlier approval boundary used only
@@ -69,7 +69,7 @@ below must be absent; in `live` mode all three are mandatory.
 | Variable | Value |
 | --- | --- |
 | `EXPECTED_AWS_ACCOUNT_ID` | Same approved 12-digit account ID in both Environments |
-| `M1_ASSESSMENT_MODE` | `live` in the deployment Environment for customer integration |
+| `ASSESSMENT_MODE` | `live` in the deployment Environment for customer integration |
 
 In the second Environment, add these three Secrets for `live` mode. They are
 intentionally not workflow-dispatch inputs and must not be copied to issues,
@@ -77,9 +77,9 @@ PRs, workflow logs, or repository files.
 
 | Secret | Value |
 | --- | --- |
-| `M1_ASSESSMENT_RUNTIME_JSON` | JSON array of approved targets shown below |
-| `M1_ASSESSMENT_SECRET_ARNS` | Comma-separated exact union of the target credential Secret ARNs |
-| `M1_ASSESSMENT_READ_ROLE_ARNS` | Comma-separated exact customer AWS read Role ARNs |
+| `ASSESSMENT_RUNTIME_JSON` | JSON array of approved targets shown below |
+| `ASSESSMENT_SECRET_ARNS` | Comma-separated exact union of the target credential Secret ARNs |
+| `ASSESSMENT_READ_ROLE_ARNS` | Comma-separated exact customer AWS read Role ARNs |
 
 Deployment and remediation write paths need two more Secrets on the same Environment. They are
 all-or-none: the workflow refuses one without the other before calling CloudFormation, and the
@@ -232,16 +232,16 @@ sanitized gate result before customer deployment.
    trusted only by the future foundation Worker Role and requiring that External
    ID. Set the three protected M1 Environment Secrets using the target JSON
    shape above.
-3. Merge the reviewed `dev` revision and dispatch **Deploy M0 Foundation** with
+3. Merge the reviewed `dev` revision and dispatch **Deploy Platform Foundation** with
    all ten required workflow inputs:
 
    | Input | Approved value |
    | --- | --- |
    | `stack_name` | Bootstrap `FoundationStackName` |
    | `project_name` | Bootstrap `ProjectName` |
-   | `environment` | `customer-sandbox-artifact` or the exact first protected Environment |
+   | `environment` | `platform-artifact` or the exact first protected Environment |
    | `stack_environment` | Bootstrap `PlatformEnvironment`, normally `sandbox` |
-   | `artifact_approval_environment` | `customer-sandbox-deploy` or the exact distinct second Environment |
+   | `artifact_approval_environment` | `platform-deploy` or the exact distinct second Environment |
    | `aws_region` | Exact Region pinned by `fixtures/m1/assessment_model_profile.json`; currently `us-east-1` |
    | `role_to_assume` | Bootstrap `GitHubActionsDeploymentRoleArn` |
    | `cloudformation_execution_role_arn` | Bootstrap `FoundationExecutionRoleArn` |
@@ -251,7 +251,7 @@ sanitized gate result before customer deployment.
    Example selector shape: `{"<customer-id>":[{"repository_id":"<product-repository-id>"}]}`. The selector
    names the Repository boundary only; the Policy Profile is chosen per Assessment from the
    customer partition's Catalog (ADR-0023), and a `policy_profile_id` key here fails validation.
-   `M1_ASSESSMENT_MODE` is a protected Environment variable, not a dispatch input.
+   `ASSESSMENT_MODE` is a protected Environment variable, not a dispatch input.
    The workflow validates mode, selector equality, canonical GitHub repository
    identity, exact ARN sets and credential-role
    disjointness, account, the approved Model Profile Region, and the lowercase
@@ -288,7 +288,7 @@ sanitized gate result before customer deployment.
    item stays and only the current pointer moves (conditionally); a partition
    whose pointer moved concurrently makes the run stop — re-run it.
 6. Create the controlled Cognito `User` as described in
-   [M1-AUTH-FRONTEND-TEST.md](M1-AUTH-FRONTEND-TEST.md).
+   [AUTH-FRONTEND-TEST.md](AUTH-FRONTEND-TEST.md).
 7. In the SPA, log in and submit the configured repository ID and policy profile.
 8. Verify the report shows an `AWS_ACTUAL` result, coverage 100%, and any
    persisted Findings/Readiness Score. Record only customer-controlled evidence

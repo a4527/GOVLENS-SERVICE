@@ -6,9 +6,9 @@ from pathlib import Path
 import yaml
 from yaml.nodes import MappingNode, ScalarNode, SequenceNode
 
-TEMPLATE_PATH = Path(__file__).parents[2] / "infrastructure/cloudformation/customer-onboarding.yaml"
+TEMPLATE_PATH = Path(__file__).parents[2] / "infrastructure/cloudformation/workload-onboarding.yaml"
 
-#: The Actual read adapters' reads (docs/sandbox/M1-SANDBOX-INTEGRATION.md). Nothing more.
+#: The Actual read adapters' reads (docs/sandbox/PLATFORM_DEPLOYMENT.md). Nothing more.
 READ_ROLE_ACTIONS = {
     "s3:ListAllMyBuckets",
     "s3:GetBucketPublicAccessBlock",

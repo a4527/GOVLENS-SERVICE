@@ -775,7 +775,7 @@ class SingleVocabularyTest(unittest.TestCase):
 
     def test_every_consumer_reads_the_adapter_registry(self) -> None:
         from apps.backend.assessment.actual import SUPPORTED_ACTUAL_RESOURCE_TYPES
-        from scripts.validate_m1_deployment_config import SUPPORTED_RESOURCE_TYPES
+        from scripts.validate_deployment_config import SUPPORTED_RESOURCE_TYPES
 
         self.assertEqual(SUPPORTED_ACTUAL_RESOURCE_TYPES, ACTUAL_READ_RESOURCE_TYPES)
         self.assertEqual(SUPPORTED_RESOURCE_TYPES, frozenset(ACTUAL_READ_RESOURCE_TYPES))

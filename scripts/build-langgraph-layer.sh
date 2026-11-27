@@ -2,7 +2,7 @@
 # Build a deterministic AWS Lambda Layer ZIP containing LangGraph and its runtime
 # dependencies for the Parent Orchestrator and workflow subgraphs (ADR-0012).
 #
-# The function ZIP (scripts/package-m0-lambda.sh) stays framework-free and holds only
+# The function ZIP (scripts/package-lambda.sh) stays framework-free and holds only
 # first-party source; third-party wheels live in this Layer instead. Keeping them apart
 # preserves the deterministic source build and keeps the plan_hash approval boundary
 # (Terraform show-json projection only, ADR-0019 §1) independent of the wheel set.

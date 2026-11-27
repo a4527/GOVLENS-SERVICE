@@ -10,6 +10,7 @@
 | --- | --- | --- | --- |
 | D-01 | P0 | DONE | 개인 프로젝트 전환 결정 기록. [DEC-0028](DECISIONS.md#dec-0028) Accepted, ADR-0001 대체 범위 표시 |
 | D-02 | P2 | DONE | Worker LangGraph 미도입 결정 기록. [DEC-0029](DECISIONS.md#dec-0029) Accepted, ADR-0005 대체 범위 표시 |
+| D-03 | P1 | IN PROGRESS | 배포 이름 정리([DEC-0031](DECISIONS.md#dec-0031)). 1단계: 워크플로·CloudFormation 템플릿·배포 스크립트·Environment·배포 변수·Layer 태그·운영 문서 이름에 `platform`/`workload`를 쓰고 마일스톤 번호가 없다(두 저장소). 2단계: Python 클래스·함수·모듈, `fixtures/m0`·`m1`·`m4`, 테스트 파일·클래스 이름, 현행 문서·주석의 마일스톤 표기를 뺀다. 기록 문서 본문과 평가 버전 ID는 그대로이고, 옛 이름은 기록 문서에만 남는다. V-03 배포 전에 1단계 |
 
 ## 기능 구현
 
@@ -29,15 +30,15 @@
 | --- | --- | --- | --- |
 | V-01 | P0 | DONE | 로컬 개발 환경과 기준선. `.venv`(uv) + CI 동일 명령으로 ruff·unittest 4종·frontend build·gitleaks 통과 ([worklog](worklogs/2026-11-23.md)) |
 | V-02 | P0 | DONE | 잔존 AWS 리소스·비용 점검과 운영 계정 결정. 팀 sandbox 계정은 접근할 수 없어 점검 불가(팀 쪽 정리 대상), 개인 계정에는 Govlens 리소스가 없음을 17개 리전에서 확인했다. 단일 계정·Foundation 유지·workload 매일 삭제로 결정([DEC-0030](DECISIONS.md#dec-0030), [worklog](worklogs/2026-11-23.md)) |
-| V-03 | P1 | TODO | 개인 계정 sandbox 구성. V-11 bootstrap으로 플랫폼 bootstrap·Foundation·고객 onboarding을 배포하고, a4527 저장소에 Environment(Required reviewers 포함)·Secret·Variable·GitHub App을 새로 만든다. 2026-11-23 확인 시 두 저장소 모두 Secret·Variable·Environment가 없다 ([CUSTOMER_SANDBOX_ONBOARDING](sandbox/CUSTOMER_SANDBOX_ONBOARDING.md)). V-10·V-11 이후 |
-| V-04 | P1 | TODO | 고객 read Role 권한 반영(`customer-onboarding.yaml`의 read Role이 아래 권한을 포함하므로 V-11 배포로 충족 예정). S3 `GetBucketPolicy`/`GetBucketOwnershipControls`/`GetBucketLogging`, EC2 `DescribeSubnets`가 배포된 read Role에 있다 ([M1-SANDBOX-INTEGRATION](sandbox/M1-SANDBOX-INTEGRATION.md)). V-03 이후 |
-| V-05 | P1 | TODO | 폐루프 라이브 E2E. Assessment → Finding → Remediation PR → plan → 승인 → apply(2026-09-07 dispatch `ref` 수정 포함) → Post-Deploy Verification이 실제 sandbox에서 완주한다 ([M4-DEMO-RUNBOOK](demo/M4-DEMO-RUNBOOK.md)). V-03·V-04 이후 |
+| V-03 | P1 | TODO | 개인 계정 sandbox 구성. V-11 bootstrap으로 플랫폼 bootstrap·Foundation·고객 onboarding을 배포하고, a4527 저장소에 Environment(Required reviewers 포함)·Secret·Variable·GitHub App을 새로 만든다. 2026-11-23 확인 시 두 저장소 모두 Secret·Variable·Environment가 없다 ([WORKLOAD_ONBOARDING](sandbox/WORKLOAD_ONBOARDING.md)). V-10·V-11 이후 |
+| V-04 | P1 | TODO | 고객 read Role 권한 반영(`workload-onboarding.yaml`의 read Role이 아래 권한을 포함하므로 V-11 배포로 충족 예정). S3 `GetBucketPolicy`/`GetBucketOwnershipControls`/`GetBucketLogging`, EC2 `DescribeSubnets`가 배포된 read Role에 있다 ([PLATFORM_DEPLOYMENT](sandbox/PLATFORM_DEPLOYMENT.md)). V-03 이후 |
+| V-05 | P1 | TODO | 폐루프 라이브 E2E. Assessment → Finding → Remediation PR → plan → 승인 → apply(2026-09-07 dispatch `ref` 수정 포함) → Post-Deploy Verification이 실제 sandbox에서 완주한다 ([DEMO-RUNBOOK](demo/DEMO-RUNBOOK.md)). V-03·V-04 이후 |
 | V-06 | P1 | TODO | 점수 경계 라이브 회귀 측정. `evaluations/data/score-boundary-20260905.md` §3 절차를 자격 증명 환경에서 실행하고 CODE/MODEL 판정별 정확도·일치율을 기록한다 |
-| V-07 | P2 | TODO | M4 Golden release gate 실측. Post-Deploy 18 Case × 5 run observation bundle로 `scripts/evaluate_m4_golden_release_gate.py` sanitized report를 만든다 ([M4-GOLDEN-RELEASE-GATE](evaluations/M4-GOLDEN-RELEASE-GATE.md)). V-05 이후 |
+| V-07 | P2 | TODO | M4 Golden release gate 실측. Post-Deploy 18 Case × 5 run observation bundle로 `scripts/evaluate_golden_release_gate.py` sanitized report를 만든다 ([GOLDEN-RELEASE-GATE](evaluations/GOLDEN-RELEASE-GATE.md)). V-05 이후 |
 | V-08 | P2 | TODO | Frontend 테스트. `apps/frontend`에 test 스크립트가 없다. 최소 smoke test를 추가하고 `frontend-checks.yml`에서 실행한다 |
 | V-09 | P1 | TODO | 정책 원문 확보. `policies-local/`에 ISMS-P 인증기준(2023-10-31, KISA 공개본)을 두고 `build_isms_p_baseline.py --check`가 통과한다. 사내 체크리스트는 옛 원문을 구해 digest가 맞는지 확인하거나, 새로 작성해 새 version으로 등록하고 16개 Rule의 `source_references`를 갱신한다 |
 | V-10 | P1 | IN PROGRESS | 공통 태그. CloudFormation 스택(`--tags`)과 customer-demo `default_tags`가 `Owner`·`Project`·`Layer`를 붙이고, `Owner` 값은 파라미터·GitHub Variable로 받는다(저장소에 값 없음). Tag Editor에서 계층별 조회가 된다 ([DEC-0030](DECISIONS.md#dec-0030)). 2026-11-23 코드 반영(Foundation 워크플로 `--tags`, bootstrap 역할 태그 권한, customer-demo·템플릿 `default_tags`), 라이브 확인은 V-03 배포 때 |
-| V-11 | P1 | IN PROGRESS | 재실행 가능한 bootstrap. 빈 계정에서 `m1-customer-bootstrap` → Foundation 배포 → 고객 onboarding(state 버킷·lock 테이블·Plan/Apply/read Role) 순서를 스크립트 하나로 실행하고, 이미 있으면 건너뛴다. 고객 onboarding은 지금 수동 체크리스트이므로 CloudFormation 템플릿으로 만들어 실제 고객 온보딩 키트로도 쓴다. V-10 이후. 2026-11-23 코드 반영(`customer-onboarding.yaml`, customer-demo `onboarding/workload-policy.yaml`, `scripts/sandbox-bootstrap.sh`, 잔존 Foundation 리소스 삭제 `recover-foundation`), 빈 계정 실행 확인은 V-03에서 |
+| V-11 | P1 | IN PROGRESS | 재실행 가능한 bootstrap. 빈 계정에서 `platform-bootstrap` → Foundation 배포 → 고객 onboarding(state 버킷·lock 테이블·Plan/Apply/read Role) 순서를 스크립트 하나로 실행하고, 이미 있으면 건너뛴다. 고객 onboarding은 지금 수동 체크리스트이므로 CloudFormation 템플릿으로 만들어 실제 고객 온보딩 키트로도 쓴다. V-10 이후. 2026-11-23 코드 반영(`workload-onboarding.yaml`, customer-demo `onboarding/workload-policy.yaml`, `scripts/sandbox-bootstrap.sh`, 잔존 Foundation 리소스 삭제 `recover-foundation`), 빈 계정 실행 확인은 V-03에서 |
 | V-12 | P1 | TODO | customer workload 일일 teardown. customer-demo를 `terraform destroy`로 지워도 state·Foundation·onboarding은 남고, 다음 apply가 같은 비준수 기준선(태그 또는 브랜치로 고정)에서 시작한다. 조치 PR merge 뒤 기준선 복원 절차가 문서화된다 |
 
 ## 관측
@@ -54,6 +55,6 @@
 
 ## 선행 관계
 
-- V-10 → V-11 → V-03 → V-04 → V-05 → V-07, V-12는 V-05 전에 둔다
+- V-10 → V-11 → D-03(1단계) → V-03 → V-04 → V-05 → V-07, V-12는 V-05 전에 둔다
 - O-03 → O-05 → F-04, O-05 → V-07(release gate 관측·비용 기록).
 - F-01·V-05 → F-05 → F-06.

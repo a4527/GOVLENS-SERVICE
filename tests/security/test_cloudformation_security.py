@@ -10,7 +10,7 @@ from pathlib import Path
 import yaml
 from yaml.nodes import MappingNode, ScalarNode, SequenceNode
 
-TEMPLATE_PATH = Path(__file__).parents[2] / "infrastructure/cloudformation/m0-foundation.yaml"
+TEMPLATE_PATH = Path(__file__).parents[2] / "infrastructure/cloudformation/platform-foundation.yaml"
 
 
 HANDLER_PATH = Path(__file__).parents[2] / "apps/backend/api/handler.py"
@@ -346,8 +346,8 @@ class CloudFormationSecurityTest(unittest.TestCase):
         role_properties = _properties(self.resources["WorkflowRuntimeRole"])
         policies = role_properties["Policies"]
         live_policy_condition = policies[1]
-        self.assertEqual(live_policy_condition[0], "M1LiveAssessmentEnabled")
-        self.assertEqual(live_policy_condition[1]["PolicyName"], "M1ReadOnlyAssessmentInputs")
+        self.assertEqual(live_policy_condition[0], "LiveAssessmentEnabled")
+        self.assertEqual(live_policy_condition[1]["PolicyName"], "ReadOnlyAssessmentInputs")
         self.assertEqual(live_policy_condition[2], "AWS::NoValue")
         statements = live_policy_condition[1]["PolicyDocument"]["Statement"]
         self.assertEqual(len(statements), 3)
@@ -563,7 +563,9 @@ class DeploymentArtifactSecurityTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.template = _template()
-        workflow_path = Path(__file__).parents[2] / ".github/workflows/deploy-m0-foundation.yml"
+        workflow_path = (
+            Path(__file__).parents[2] / ".github/workflows/deploy-platform-foundation.yml"
+        )
         workflow = yaml.load(workflow_path.read_text(encoding="utf-8"), Loader=yaml.BaseLoader)
         if not isinstance(workflow, dict):
             raise TypeError("Deployment workflow must be a mapping")
@@ -574,14 +576,12 @@ class DeploymentArtifactSecurityTest(unittest.TestCase):
         cls.deploy_steps = {step["name"]: step for step in cls.deploy_job["steps"]}
         runbook_path = (
             Path(__file__).parents[2]
-            / "infrastructure/parameters/m0-foundation-sandbox-deployment-runbook.md"
+            / "infrastructure/parameters/platform-foundation-sandbox-deployment-runbook.md"
         )
         cls.runbook = runbook_path.read_text(encoding="utf-8")
-        package_script_path = Path(__file__).parents[2] / "scripts/package-m0-lambda.sh"
+        package_script_path = Path(__file__).parents[2] / "scripts/package-lambda.sh"
         cls.package_script = package_script_path.read_text(encoding="utf-8")
-        package_workflow_path = (
-            Path(__file__).parents[2] / ".github/workflows/m0-lambda-package.yml"
-        )
+        package_workflow_path = Path(__file__).parents[2] / ".github/workflows/lambda-package.yml"
         cls.package_workflow = package_workflow_path.read_text(encoding="utf-8")
 
     def test_lambda_functions_pin_the_uploaded_s3_object_version(self) -> None:
@@ -624,9 +624,9 @@ class DeploymentArtifactSecurityTest(unittest.TestCase):
             "entry.external_attr = 0o100644 << 16",
         ):
             self.assertIn(required, self.package_script)
-        self.assertIn("m0-lambda-first.zip", self.package_workflow)
-        self.assertIn("m0-lambda-second.zip", self.package_workflow)
-        self.assertIn('cmp -- "${RUNNER_TEMP}/m0-lambda-first.zip"', self.package_workflow)
+        self.assertIn("lambda-first.zip", self.package_workflow)
+        self.assertIn("lambda-second.zip", self.package_workflow)
+        self.assertIn('cmp -- "${RUNNER_TEMP}/lambda-first.zip"', self.package_workflow)
 
     def test_exact_artifact_binding_has_a_second_human_gate(self) -> None:
         inputs = self.workflow["on"]["workflow_dispatch"]["inputs"]
@@ -966,7 +966,9 @@ class CloudFormationTemplateDeliveryTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        workflow_path = Path(__file__).parents[2] / ".github/workflows/deploy-m0-foundation.yml"
+        workflow_path = (
+            Path(__file__).parents[2] / ".github/workflows/deploy-platform-foundation.yml"
+        )
         workflow = yaml.load(workflow_path.read_text(encoding="utf-8"), Loader=yaml.BaseLoader)
         if not isinstance(workflow, dict):
             raise TypeError("Deployment workflow must be a mapping")
@@ -984,7 +986,7 @@ class CloudFormationTemplateDeliveryTest(unittest.TestCase):
         self.assertLessEqual(
             self.template_bytes,
             limit,
-            f"m0-foundation.yaml is {self.template_bytes} bytes; the deploy "
+            f"platform-foundation.yaml is {self.template_bytes} bytes; the deploy "
             f"{'stages it through S3' if staged else 'sends it inline'}, limit {limit}",
         )
 
@@ -997,14 +999,14 @@ class CloudFormationTemplateDeliveryTest(unittest.TestCase):
         if "--s3-bucket" not in self.deploy_command:
             self.skipTest("the deploy sends the template inline")
         self.assertIn('--s3-bucket "${LAMBDA_CODE_S3_BUCKET}"', self.deploy_command)
-        self.assertIn("--s3-prefix lambda/m0", self.deploy_command)
+        self.assertIn("--s3-prefix lambda/foundation", self.deploy_command)
 
         roles_path = (
             Path(__file__).parents[2]
-            / "infrastructure/cloudformation/m1-customer-bootstrap-roles.yaml"
+            / "infrastructure/cloudformation/platform-bootstrap-roles.yaml"
         )
         granted = roles_path.read_text(encoding="utf-8")
-        self.assertIn("${ExistingLambdaCodeBucketName}/lambda/m0/*", granted)
+        self.assertIn("${ExistingLambdaCodeBucketName}/lambda/foundation/*", granted)
 
 
 class UserPoolPasswordPolicyParityTest(unittest.TestCase):

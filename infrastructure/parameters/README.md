@@ -1,6 +1,6 @@
 # M0 foundation parameters
 
-`infrastructure/cloudformation/m0-foundation.yaml` accepts deployment-specific values. Do not
+`infrastructure/cloudformation/platform-foundation.yaml` accepts deployment-specific values. Do not
 commit customer names, AWS account identifiers, credentials, approved scope maps, or other
 sensitive deployment values.
 
@@ -34,7 +34,7 @@ approval-gated workflow; customer values are not committed.
   {"ParameterKey": "ProjectName", "ParameterValue": "example-platform"},
   {"ParameterKey": "Environment", "ParameterValue": "dev"},
   {"ParameterKey": "LambdaCodeS3Bucket", "ParameterValue": "example-deployment-artifacts"},
-  {"ParameterKey": "LambdaCodeS3Key", "ParameterValue": "lambda/m0/example-commit-sha.zip"},
+  {"ParameterKey": "LambdaCodeS3Key", "ParameterValue": "lambda/foundation/example-commit-sha.zip"},
   {"ParameterKey": "LambdaCodeS3ObjectVersion", "ParameterValue": "example-s3-version-id"},
   {"ParameterKey": "AssessmentScopeJson", "ParameterValue": "{}"}
 ]

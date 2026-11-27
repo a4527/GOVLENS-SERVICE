@@ -45,4 +45,4 @@ The stack deployment itself remains an approved GitHub Actions OIDC operation. T
 does not authorize local AWS deployment, stack mutation, or use of real customer credentials.
 
 For the actual GitHub/AWS/Bedrock M1 evaluation configuration after this login step, use
-[M1-SANDBOX-INTEGRATION.md](M1-SANDBOX-INTEGRATION.md).
+[PLATFORM_DEPLOYMENT.md](PLATFORM_DEPLOYMENT.md).

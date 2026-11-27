@@ -6,7 +6,7 @@ on:
       environment:
         description: Protected GitHub Environment allowed to publish the SPA
         required: true
-        default: customer-sandbox-deploy
+        default: platform-deploy
         type: environment
       project_name:
         description: ProjectName used by the frontend and foundation stacks

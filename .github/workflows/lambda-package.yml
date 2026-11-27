@@ -1,4 +1,4 @@
-name: M0 Lambda Package
+name: Lambda Package
 
 on:
   pull_request:
@@ -7,16 +7,16 @@ on:
       - "apps/**"
       - "packages/**"
       - "fixtures/m0/**"
-      - "scripts/package-m0-lambda.sh"
+      - "scripts/package-lambda.sh"
       - ".gitattributes"
-      - ".github/workflows/m0-lambda-package.yml"
+      - ".github/workflows/lambda-package.yml"
   workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  package-m0-lambda:
+  package-lambda:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
@@ -30,7 +30,7 @@ jobs:
       - name: Build and verify deterministic Lambda ZIP
         run: |
           set -euo pipefail
-          bash scripts/package-m0-lambda.sh "${RUNNER_TEMP}/m0-lambda-first.zip"
-          bash scripts/package-m0-lambda.sh "${RUNNER_TEMP}/m0-lambda-second.zip"
-          cmp -- "${RUNNER_TEMP}/m0-lambda-first.zip" "${RUNNER_TEMP}/m0-lambda-second.zip"
-          sha256sum "${RUNNER_TEMP}/m0-lambda-first.zip"
+          bash scripts/package-lambda.sh "${RUNNER_TEMP}/lambda-first.zip"
+          bash scripts/package-lambda.sh "${RUNNER_TEMP}/lambda-second.zip"
+          cmp -- "${RUNNER_TEMP}/lambda-first.zip" "${RUNNER_TEMP}/lambda-second.zip"
+          sha256sum "${RUNNER_TEMP}/lambda-first.zip"

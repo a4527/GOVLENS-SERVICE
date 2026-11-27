@@ -4,12 +4,12 @@ CloudFormation packaging, IAM definitions, and deployment parameters for the cus
 
 ## Customer-operated M1 bootstrap
 
-`cloudformation/m1-customer-bootstrap.yaml` is the one-time stack a customer
+`cloudformation/platform-bootstrap.yaml` is the one-time stack a customer
 administrator runs in the target sandbox account before any repository workflow
 can access it. It creates a private, versioned Lambda-code bucket, a GitHub
 Actions OIDC deployment role, and a CloudFormation execution role. The GitHub
 role trusts only the two exact protected Environment subjects supplied to the
-bootstrap and can upload only `lambda/m0/*`, manage the one declared foundation
+bootstrap and can upload only `lambda/foundation/*`, manage the one declared foundation
 stack, and pass only the execution role to CloudFormation. It has no customer
 workload, Secrets Manager, Bedrock, or `sts:AssumeRole` permission.
 
@@ -17,13 +17,13 @@ The bootstrap supports an existing account-level GitHub OIDC provider through
 `ExistingGitHubOidcProviderArn`; otherwise it creates one. A customer must run
 this stack with its own approved administrator path. It is not run by a local
 Agent session or by the repository workflow it enables. Its outputs are the
-only AWS identifiers needed by `Deploy M0 Foundation`; see
-`docs/sandbox/M1-SANDBOX-INTEGRATION.md` for the complete M1 sequence.
+only AWS identifiers needed by `Deploy Platform Foundation`; see
+`docs/sandbox/PLATFORM_DEPLOYMENT.md` for the complete M1 sequence.
 
 ## Customer onboarding and sandbox bootstrap
 
-`cloudformation/customer-onboarding.yaml` turns the manual checklist in
-`docs/sandbox/CUSTOMER_SANDBOX_ONBOARDING.md` into one customer-operated stack per Terraform
+`cloudformation/workload-onboarding.yaml` turns the manual checklist in
+`docs/sandbox/WORKLOAD_ONBOARDING.md` into one customer-operated stack per Terraform
 workload repository: a retained, versioned, TLS-only state bucket and lock table, Plan and Apply
 OIDC roles that each trust one exact protected Environment subject, and the cross-account read
 role that the platform Worker assumes with a generated External ID (stored in Secrets Manager).
@@ -58,18 +58,18 @@ The stack must retain data by default. It must not create customer-workload writ
 Agent Runtime and AWS Resource Tool roles are read-only, and Terraform write permissions stay
 on the separately approved GitHub Actions OIDC Apply path.
 
-`cloudformation/m0-foundation.yaml` implements the M0 resource skeleton: metadata table,
+`cloudformation/platform-foundation.yaml` implements the M0 resource skeleton: metadata table,
 private versioned artifact bucket, Assessment/Remediation/Deployment queues with DLQs,
 Cognito User Pool/client, HTTP API JWT authorizer, Job API Lambda, EventBridge-scheduled Outbox
 sweeper Lambda, and Assessment SQS Worker Lambda. The worker is deliberately restricted to the
 packaged synthetic S3 Fixture in M0. The HTTP API uses its `$default` stage with auto deployment,
 and the User Pool is retained on stack deletion or replacement. `LambdaCodeS3Bucket`,
 `LambdaCodeS3Key`, and `LambdaCodeS3ObjectVersion` must identify the exact versioned ZIP built by
-`scripts/package-m0-lambda.sh`; the package-validation and deployment workflows pin Python 3.12,
+`scripts/package-lambda.sh`; the package-validation and deployment workflows pin Python 3.12,
 Git attributes normalize text files under `apps/`, `packages/`, and `fixtures/` to LF, and the
 script writes sorted entries with fixed metadata for a deterministic hash. It verifies application
 imports and the required `fixtures/m0/` files inside the same Python process without an early-exit
-shell pipeline. `.github/workflows/deploy-m0-foundation.yml` is the approval-gated
+shell pipeline. `.github/workflows/deploy-platform-foundation.yml` is the approval-gated
 manual GitHub Actions OIDC path. Its preparation job validates the expected AWS account against the
 role ARN, STS identity, and artifact-bucket owner; computes the ZIP SHA-256; and conditionally creates
 or verifies the matching commit-qualified object version. A second, distinct protected Environment
@@ -92,7 +92,7 @@ and tags the stack with `Owner`, `Project`, and `Layer=foundation` (DEC-0030).
 
 For M1 sandbox frontend testing, the stack also creates Cognito `Admin`/`User` groups and a
 Hosted UI domain with Authorization Code OAuth enabled. The customer-operated local-user
-handoff and PKCE frontend test are documented in `docs/sandbox/M1-AUTH-FRONTEND-TEST.md`; no user
+handoff and PKCE frontend test are documented in `docs/sandbox/AUTH-FRONTEND-TEST.md`; no user
 password is a CloudFormation parameter or repository value.
 
 ## Storage hardening and validation
@@ -121,13 +121,13 @@ The stack exposes metadata table and artifact bucket names and ARNs for runtime 
 least-privilege integrations. `ProjectName` and `Environment` constraints, including the
 account-qualified S3 naming exception, are documented in `parameters/README.md` and
 `docs/design/NAMING.md`. The non-deploying approval-input checklist and controlled sandbox CloudTrail
-acceptance procedure are in `parameters/m0-foundation-sandbox-deployment-runbook.md`; they must be
+acceptance procedure are in `parameters/platform-foundation-sandbox-deployment-runbook.md`; they must be
 completed through the protected GitHub Actions path, not from a local developer or Agent session.
 
 Run the same offline CloudFormation validation used by CI without deploying:
 
 ```bash
 cfn-lint --non-zero-exit-code error \
-  infrastructure/cloudformation/m0-foundation.yaml \
-  infrastructure/cloudformation/m1-customer-bootstrap.yaml
+  infrastructure/cloudformation/platform-foundation.yaml \
+  infrastructure/cloudformation/platform-bootstrap.yaml
 ```

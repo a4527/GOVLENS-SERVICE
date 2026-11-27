@@ -2,9 +2,9 @@
 # Re-runnable single-account sandbox bootstrap (DEC-0030, TASKS V-11).
 #
 # Replays the customer deployment path in order, skipping what already exists:
-#   platform    m1-customer-bootstrap stack (OIDC provider, deploy/CFN roles, Lambda code bucket)
-#   foundation  dispatches the protected deploy-m0-foundation workflow (never deploys locally)
-#   customer    customer-demo workload policy + customer-onboarding stack
+#   platform    platform-bootstrap stack (OIDC provider, deploy/CFN roles, Lambda code bucket)
+#   foundation  dispatches the protected deploy-platform-foundation workflow (never deploys locally)
+#   customer    customer-demo workload policy + workload-onboarding stack
 #               (state backend, Plan/Apply OIDC roles, cross-account read role, External ID)
 #   status      prints the stack outputs needed for GitHub Environments and Secrets
 #   recover-foundation
@@ -26,7 +26,7 @@
 # Optional environment:
 #   PROJECT_NAME (govlens), PLATFORM_ENVIRONMENT (sandbox), AWS_REGION (us-east-1),
 #   CUSTOMER_DEMO_DIR (../customer-demo relative to the repository root),
-#   ARTIFACT_ENVIRONMENT (customer-sandbox-artifact), DEPLOY_ENVIRONMENT (customer-sandbox-deploy)
+#   ARTIFACT_ENVIRONMENT (platform-artifact), DEPLOY_ENVIRONMENT (platform-deploy)
 #
 # Usage: scripts/sandbox-bootstrap.sh <platform|foundation|customer|status|recover-foundation> [--yes]
 #   Without --yes each stack change is shown as a change set preview and needs confirmation.
@@ -40,15 +40,15 @@ PROJECT_NAME=${PROJECT_NAME:-govlens}
 PLATFORM_ENVIRONMENT=${PLATFORM_ENVIRONMENT:-sandbox}
 AWS_REGION=${AWS_REGION:-us-east-1}
 CUSTOMER_DEMO_DIR=${CUSTOMER_DEMO_DIR:-${ROOT}/../customer-demo}
-ARTIFACT_ENVIRONMENT=${ARTIFACT_ENVIRONMENT:-customer-sandbox-artifact}
-DEPLOY_ENVIRONMENT=${DEPLOY_ENVIRONMENT:-customer-sandbox-deploy}
+ARTIFACT_ENVIRONMENT=${ARTIFACT_ENVIRONMENT:-platform-artifact}
+DEPLOY_ENVIRONMENT=${DEPLOY_ENVIRONMENT:-platform-deploy}
 export AWS_REGION AWS_DEFAULT_REGION="${AWS_REGION}"
 
 PREFIX="${PROJECT_NAME}-${PLATFORM_ENVIRONMENT}"
 BOOTSTRAP_STACK="${PREFIX}-bootstrap"
 FOUNDATION_STACK="${PREFIX}-foundation"
 WORKLOAD_POLICY_STACK="${PREFIX}-workload-policy"
-ONBOARDING_STACK="${PREFIX}-customer-onboarding"
+ONBOARDING_STACK="${PREFIX}-workload-onboarding"
 
 ASSUME_YES=false
 
@@ -133,10 +133,10 @@ phase_platform() {
   if ! stack_exists "${BOOTSTRAP_STACK}" && aws s3api head-bucket --bucket "${code_bucket}" \
     --expected-bucket-owner "${EXPECTED_AWS_ACCOUNT_ID}" >/dev/null 2>&1; then
     [[ -n "${existing_provider}" ]] || die "code bucket exists but the OIDC provider does not; create the provider first"
-    deploy "${BOOTSTRAP_STACK}" "${CFN}/m1-customer-bootstrap-roles.yaml" bootstrap \
+    deploy "${BOOTSTRAP_STACK}" "${CFN}/platform-bootstrap-roles.yaml" bootstrap \
       "${params[@]}" "ExistingLambdaCodeBucketName=${code_bucket}"
   else
-    deploy "${BOOTSTRAP_STACK}" "${CFN}/m1-customer-bootstrap.yaml" bootstrap "${params[@]}"
+    deploy "${BOOTSTRAP_STACK}" "${CFN}/platform-bootstrap.yaml" bootstrap "${params[@]}"
   fi
 }
 
@@ -152,7 +152,7 @@ phase_foundation() {
   fi
   local scope=${ASSESSMENT_SCOPE_JSON:-}
   [[ -n "${scope}" ]] || scope='{}'
-  local -a cmd=(gh workflow run deploy-m0-foundation.yml -R "${SERVICE_REPOSITORY}" --ref main
+  local -a cmd=(gh workflow run deploy-platform-foundation.yml -R "${SERVICE_REPOSITORY}" --ref main
     -f "stack_name=${FOUNDATION_STACK}" -f "project_name=${PROJECT_NAME}"
     -f "environment=${ARTIFACT_ENVIRONMENT}" -f "stack_environment=${PLATFORM_ENVIRONMENT}"
     -f "artifact_approval_environment=${DEPLOY_ENVIRONMENT}" -f "aws_region=${AWS_REGION}"
@@ -161,7 +161,7 @@ phase_foundation() {
     -f "assessment_scope_json=${scope}")
   echo "The foundation is deployed only through the protected workflow (two Environment approvals)."
   if [[ "${ASSUME_YES}" != true ]]; then
-    read -r -p "Dispatch deploy-m0-foundation.yml to ${SERVICE_REPOSITORY}? [y/N] " answer
+    read -r -p "Dispatch deploy-platform-foundation.yml to ${SERVICE_REPOSITORY}? [y/N] " answer
     [[ "${answer}" == y ]] || die "aborted by user"
   fi
   "${cmd[@]}"
@@ -184,14 +184,14 @@ phase_customer() {
     die "workload policy template not found under CUSTOMER_DEMO_DIR"
 
   deploy "${WORKLOAD_POLICY_STACK}" "${CUSTOMER_DEMO_DIR}/onboarding/workload-policy.yaml" \
-    customer-onboarding \
+    workload-onboarding \
     "ProjectName=${PROJECT_NAME}" "PlatformEnvironment=${PLATFORM_ENVIRONMENT}" \
     "SandboxBucketName=${SANDBOX_BUCKET_NAME}" "ApprovedRegion=${AWS_REGION}"
   local plan_policy apply_policy
   plan_policy=$(output "${WORKLOAD_POLICY_STACK}" PlanPolicyArn)
   apply_policy=$(output "${WORKLOAD_POLICY_STACK}" ApplyPolicyArn)
 
-  deploy "${ONBOARDING_STACK}" "${CFN}/customer-onboarding.yaml" customer-onboarding \
+  deploy "${ONBOARDING_STACK}" "${CFN}/workload-onboarding.yaml" workload-onboarding \
     "ProjectName=${PROJECT_NAME}" "PlatformEnvironment=${PLATFORM_ENVIRONMENT}" \
     "GitHubOidcProviderArn=${provider_arn}" \
     "WorkloadRepositorySubjectPrefix=repo:${WORKLOAD_REPOSITORY}" \
@@ -232,7 +232,7 @@ phase_recover_foundation() {
   [[ "${PLATFORM_ENVIRONMENT}" == sandbox ]] ||
     die "recover-foundation runs only for PLATFORM_ENVIRONMENT=sandbox; recover customers by import"
 
-  # Names are fixed by m0-foundation.yaml (ProjectName-Environment-<component>).
+  # Names are fixed by platform-foundation.yaml (ProjectName-Environment-<component>).
   local table="${PREFIX}-metadata"
   local artifact_bucket="${PREFIX}-artifacts-${EXPECTED_AWS_ACCOUNT_ID}"
   local audit_bucket="${PREFIX}-audit-${EXPECTED_AWS_ACCOUNT_ID}"

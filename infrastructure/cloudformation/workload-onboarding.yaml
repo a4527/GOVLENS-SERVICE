@@ -33,11 +33,11 @@ Parameters:
       repo:owner/repository.
   PlanEnvironment:
     Type: String
-    Default: customer-terraform-plan
+    Default: workload-plan
     AllowedPattern: "^[A-Za-z0-9_.-]{1,255}$"
   ApplyEnvironment:
     Type: String
-    Default: customer-terraform-apply
+    Default: workload-apply
     AllowedPattern: "^[A-Za-z0-9_.-]{1,255}$"
   PlatformWorkerRoleArn:
     Type: String
@@ -150,7 +150,7 @@ Resources:
               StringEquals:
                 sts:ExternalId: !Sub "{{resolve:secretsmanager:${ReadRoleExternalIdSecret}:SecretString}}"
       Policies:
-        # Exactly the reads the Actual read adapters perform (M1-SANDBOX-INTEGRATION). A
+        # Exactly the reads the Actual read adapters perform (PLATFORM_DEPLOYMENT). A
         # missing sub-read makes the affected coordinates INSUFFICIENT_EVIDENCE.
         - PolicyName: ActualStateRead
           PolicyDocument:

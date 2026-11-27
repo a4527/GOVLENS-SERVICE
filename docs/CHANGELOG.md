@@ -2,6 +2,10 @@
 
 사용자에게 의미 있는 제품 요구사항과 프로젝트 문서·구조의 변경을 날짜별로 기록한다.
 
+## 2026-11-27
+
+- 배포 이름을 Govlens 서비스는 `platform`, 평가 대상은 `workload`로 나누고 마일스톤 번호를 뺐다. GitHub Environment는 `platform-artifact`·`platform-deploy`·`workload-plan`·`workload-apply`, 배포 변수는 `ASSESSMENT_*`, 템플릿은 `platform-bootstrap`·`platform-foundation`·`workload-onboarding`이다([DEC-0031](DECISIONS.md#dec-0031)). 운영 문서는 `docs/sandbox/PLATFORM_DEPLOYMENT.md`·`WORKLOAD_ONBOARDING.md`, `docs/demo/DEMO-*.md`, `docs/evaluations/GOLDEN-RELEASE-GATE.md`로 옮겼다.
+
 ## 2026-11-23
 
 - 개인 sandbox를 단일 AWS 계정으로 운영하기로 했다. Foundation은 유지하고 customer-demo workload만 작업일마다 만들고 지운다. 모든 리소스에 공통 태그 `Owner`·`Project`·`Layer`를 붙인다([DEC-0030](DECISIONS.md#dec-0030)).

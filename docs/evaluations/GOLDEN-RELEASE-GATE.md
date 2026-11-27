@@ -13,7 +13,7 @@
 사전 점검(dry-run, 외부 호출 없음):
 
 ```bash
-python3 scripts/evaluate_m4_golden_release_gate.py
+python3 scripts/evaluate_golden_release_gate.py
 ```
 
 정상 dry-run은 `EXTERNAL_EVIDENCE_REQUIRED`, Case 18, 반복 5, Bedrock call 60, Code-derived DRIFT 30을 출력한다. 이 결과는 release PASS가 아니다.
@@ -96,7 +96,7 @@ Bundle 파일과 snapshot index는 private input이다. Git에 커밋하지 않�
 ## Gate 실행
 
 ```bash
-python3 scripts/evaluate_m4_golden_release_gate.py \
+python3 scripts/evaluate_golden_release_gate.py \
   --observations /private/path/m4-golden-observations.json \
   --output-dir build/m4-release
 ```

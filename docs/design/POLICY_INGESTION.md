@@ -143,7 +143,7 @@ S3 versioning만으로는 같은 key에 이후 object version이 추가되는 �
 이 목록은 두 가지 제약에서 나왔다.
 
 - **런타임 의존성이 없어야 한다.** Backend는 서드파티 런타임 의존성이 없는 ZIP Lambda로 배포된다
-  (`apps/backend/requirements.txt`, `scripts/package-m0-lambda.sh`). 위 형식은 모두 표준
+  (`apps/backend/requirements.txt`, `scripts/package-lambda.sh`). 위 형식은 모두 표준
   라이브러리(`zipfile`, `xml.etree`)만으로 처리된다. 라이브러리를 요구하는 형식을 지원하려면
   형식 결정이 아니라 배포 구조 결정이 먼저 필요하다.
 - **추출기 근거가 있어야 한다.** Markdown과 XLSX는 현재 Policy Source 2건의 형식이고

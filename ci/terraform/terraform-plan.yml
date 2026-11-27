@@ -49,8 +49,8 @@ env:
 jobs:
   plan:
     runs-on: ubuntu-latest
-    # Environment 변수와 OIDC subject를 customer-terraform-plan으로 한정한다.
-    environment: customer-terraform-plan
+    # Environment 변수와 OIDC subject를 workload-plan으로 한정한다.
+    environment: workload-plan
     steps:
       - name: Checkout approved commit
         uses: actions/checkout@v4
