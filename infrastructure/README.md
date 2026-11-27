@@ -20,6 +20,32 @@ Agent session or by the repository workflow it enables. Its outputs are the
 only AWS identifiers needed by `Deploy M0 Foundation`; see
 `docs/sandbox/M1-SANDBOX-INTEGRATION.md` for the complete M1 sequence.
 
+## Customer onboarding and sandbox bootstrap
+
+`cloudformation/customer-onboarding.yaml` turns the manual checklist in
+`docs/sandbox/CUSTOMER_SANDBOX_ONBOARDING.md` into one customer-operated stack per Terraform
+workload repository: a retained, versioned, TLS-only state bucket and lock table, Plan and Apply
+OIDC roles that each trust one exact protected Environment subject, and the cross-account read
+role that the platform Worker assumes with a generated External ID (stored in Secrets Manager).
+It grants no workload permissions: the customer attaches its own managed policies through
+`PlanWorkloadPolicyArns`/`ApplyWorkloadPolicyArns` (the demo repository ships
+`onboarding/workload-policy.yaml`). The Worker role must exist first, so deploy it after the
+foundation.
+
+`scripts/sandbox-bootstrap.sh` replays the whole path for the single-account sandbox (DEC-0030):
+`platform` (bootstrap stack), `foundation` (dispatches the protected workflow; never deploys
+locally), `customer` (workload policy + onboarding), and `status`. Each step previews a change set
+and asks before executing, tags every stack with `Owner`/`Project`/`Layer`, and takes account and
+owner values from the environment.
+
+If the account was cleaned and the foundation stack is gone or broken, its fixed-name retained
+resources (metadata table, artifact and audit buckets, CloudTrail trail, Cognito user pool) block a
+new deploy. `scripts/sandbox-bootstrap.sh recover-foundation` lists them and, after the typed
+resource prefix, deletes the stack and those resources with all their data. It runs only for
+`PLATFORM_ENVIRONMENT=sandbox` and refuses a healthy stack unless `FORCE_RECOVER=1`. A customer
+environment must not use it: recover there by CloudFormation resource import so audit logs and
+assessment history survive.
+
 ## M0 foundation contract
 
 The first stack accepts `ProjectName` and `Environment`; it normally derives physical names as

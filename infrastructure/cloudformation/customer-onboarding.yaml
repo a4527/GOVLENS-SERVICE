@@ -1,0 +1,263 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >-
+  Customer-operated onboarding for one Terraform workload repository. It creates the
+  Terraform state backend, the GitHub OIDC Plan and Apply roles bound to the two protected
+  Environments, and the cross-account read role that the platform Worker assumes with an
+  External ID. Workload permissions are not granted here: the customer attaches its own
+  managed policies through PlanWorkloadPolicyArns and ApplyWorkloadPolicyArns.
+
+Parameters:
+  ProjectName:
+    Type: String
+    MinLength: 2
+    MaxLength: 31
+    AllowedPattern: "^(?!xn--)(?!sthree-)(?!amzn-s3-demo-)[a-z](?:[a-z0-9-]*[a-z0-9])?$"
+    ConstraintDescription: Use the same lowercase project name as the platform stacks.
+  PlatformEnvironment:
+    Type: String
+    Default: sandbox
+    MinLength: 2
+    MaxLength: 8
+    AllowedPattern: "^[a-z](?:[a-z0-9-]*[a-z0-9])?$"
+  GitHubOidcProviderArn:
+    Type: String
+    AllowedPattern: "^arn:[^:]+:iam::[0-9]{12}:oidc-provider/token.actions.githubusercontent.com$"
+    ConstraintDescription: The account's existing GitHub OIDC provider (the platform bootstrap output).
+  WorkloadRepositorySubjectPrefix:
+    Type: String
+    MinLength: 12
+    MaxLength: 220
+    AllowedPattern: "^repo:[^:]+$"
+    ConstraintDescription: >-
+      Exact OIDC subject prefix of the customer Terraform repository, for example
+      repo:owner/repository.
+  PlanEnvironment:
+    Type: String
+    Default: customer-terraform-plan
+    AllowedPattern: "^[A-Za-z0-9_.-]{1,255}$"
+  ApplyEnvironment:
+    Type: String
+    Default: customer-terraform-apply
+    AllowedPattern: "^[A-Za-z0-9_.-]{1,255}$"
+  PlatformWorkerRoleArn:
+    Type: String
+    AllowedPattern: "^arn:[^:]+:iam::[0-9]{12}:role/.+$"
+    ConstraintDescription: The platform workflow runtime role that reads customer resources.
+  PlanWorkloadPolicyArns:
+    Type: CommaDelimitedList
+    Default: ""
+    Description: Customer-owned managed policies the Plan role needs to refresh the workload (read only).
+  ApplyWorkloadPolicyArns:
+    Type: CommaDelimitedList
+    Default: ""
+    Description: Customer-owned managed policies the Apply role needs to change the workload.
+
+Conditions:
+  HasPlanWorkloadPolicies: !Not [!Equals [!Join ["", !Ref PlanWorkloadPolicyArns], ""]]
+  HasApplyWorkloadPolicies: !Not [!Equals [!Join ["", !Ref ApplyWorkloadPolicyArns], ""]]
+
+Resources:
+  # State and lock survive stack deletion: losing them orphans every workload resource.
+  TerraformStateBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketName: !Sub "${ProjectName}-${PlatformEnvironment}-tfstate-${AWS::AccountId}"
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+      Tags:
+        - Key: Component
+          Value: terraform-state
+
+  TerraformStateBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      Bucket: !Ref TerraformStateBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: DenyInsecureTransport
+            Effect: Deny
+            Principal: "*"
+            Action: "s3:*"
+            Resource:
+              - !GetAtt TerraformStateBucket.Arn
+              - !Sub "${TerraformStateBucket.Arn}/*"
+            Condition:
+              Bool:
+                aws:SecureTransport: "false"
+
+  TerraformLockTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      TableName: !Sub "${ProjectName}-${PlatformEnvironment}-tflock"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: LockID
+          AttributeType: S
+      KeySchema:
+        - AttributeName: LockID
+          KeyType: HASH
+      SSESpecification:
+        SSEEnabled: true
+      Tags:
+        - Key: Component
+          Value: terraform-lock
+
+  # No fixed name: a scheduled-deletion secret would block re-creating the same name for
+  # up to 30 days after an account cleanup.
+  ReadRoleExternalIdSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Description: Random External ID required by the customer read role trust policy.
+      GenerateSecretString:
+        PasswordLength: 48
+        ExcludePunctuation: true
+      Tags:
+        - Key: Component
+          Value: read-external-id
+
+  CustomerReadRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${ProjectName}-${PlatformEnvironment}-customer-read"
+      MaxSessionDuration: 3600
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Ref PlatformWorkerRoleArn
+            Action: sts:AssumeRole
+            Condition:
+              StringEquals:
+                sts:ExternalId: !Sub "{{resolve:secretsmanager:${ReadRoleExternalIdSecret}:SecretString}}"
+      Policies:
+        # Exactly the reads the Actual read adapters perform (M1-SANDBOX-INTEGRATION). A
+        # missing sub-read makes the affected coordinates INSUFFICIENT_EVIDENCE.
+        - PolicyName: ActualStateRead
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:ListAllMyBuckets
+                  - s3:GetBucketPublicAccessBlock
+                  - s3:GetEncryptionConfiguration
+                  - s3:GetBucketPolicyStatus
+                  - s3:GetBucketPolicy
+                  - s3:GetBucketOwnershipControls
+                  - s3:GetBucketLogging
+                  - ec2:DescribeInstances
+                  - ec2:DescribeVolumes
+                  - ec2:DescribeSecurityGroups
+                  - ec2:DescribeSubnets
+                  - rds:DescribeDBInstances
+                  - elasticloadbalancing:DescribeLoadBalancers
+                  - elasticloadbalancing:DescribeListeners
+                  - elasticloadbalancing:DescribeLoadBalancerAttributes
+                Resource: "*"
+      Tags:
+        - Key: Component
+          Value: customer-read
+
+  TerraformPlanRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${ProjectName}-${PlatformEnvironment}-terraform-plan"
+      MaxSessionDuration: 3600
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: !Ref GitHubOidcProviderArn
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              StringEquals:
+                token.actions.githubusercontent.com:aud: sts.amazonaws.com
+                token.actions.githubusercontent.com:sub: !Sub "${WorkloadRepositorySubjectPrefix}:environment:${PlanEnvironment}"
+      ManagedPolicyArns: !If [HasPlanWorkloadPolicies, !Ref PlanWorkloadPolicyArns, !Ref AWS::NoValue]
+      Policies:
+        - PolicyName: TerraformStateRead
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: s3:ListBucket
+                Resource: !GetAtt TerraformStateBucket.Arn
+              - Effect: Allow
+                Action: s3:GetObject
+                Resource: !Sub "${TerraformStateBucket.Arn}/*"
+              - Effect: Allow
+                Action: [dynamodb:DescribeTable, dynamodb:GetItem, dynamodb:PutItem, dynamodb:DeleteItem]
+                Resource: !GetAtt TerraformLockTable.Arn
+      Tags:
+        - Key: Component
+          Value: terraform-plan
+
+  TerraformApplyRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${ProjectName}-${PlatformEnvironment}-terraform-apply"
+      MaxSessionDuration: 3600
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: !Ref GitHubOidcProviderArn
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              StringEquals:
+                token.actions.githubusercontent.com:aud: sts.amazonaws.com
+                token.actions.githubusercontent.com:sub: !Sub "${WorkloadRepositorySubjectPrefix}:environment:${ApplyEnvironment}"
+      ManagedPolicyArns: !If [HasApplyWorkloadPolicies, !Ref ApplyWorkloadPolicyArns, !Ref AWS::NoValue]
+      Policies:
+        - PolicyName: TerraformStateReadWrite
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: s3:ListBucket
+                Resource: !GetAtt TerraformStateBucket.Arn
+              - Effect: Allow
+                Action: [s3:GetObject, s3:PutObject]
+                Resource: !Sub "${TerraformStateBucket.Arn}/*"
+              - Effect: Allow
+                Action: [dynamodb:DescribeTable, dynamodb:GetItem, dynamodb:PutItem, dynamodb:DeleteItem]
+                Resource: !GetAtt TerraformLockTable.Arn
+      Tags:
+        - Key: Component
+          Value: terraform-apply
+
+Outputs:
+  TerraformStateBucketName:
+    Value: !Ref TerraformStateBucket
+  TerraformLockTableName:
+    Value: !Ref TerraformLockTable
+  TerraformPlanRoleArn:
+    Value: !GetAtt TerraformPlanRole.Arn
+  TerraformApplyRoleArn:
+    Value: !GetAtt TerraformApplyRole.Arn
+  CustomerReadRoleArn:
+    Value: !GetAtt CustomerReadRole.Arn
+  ReadRoleExternalIdSecretArn:
+    Value: !Ref ReadRoleExternalIdSecret

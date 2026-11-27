@@ -19,6 +19,8 @@ The customer administrator supplies the following through the approved customer 
 | GitHub Environments | Create `customer-terraform-plan` and protected `customer-terraform-apply` | Apply has required reviewers; each role trust matches its exact Environment subject. Both hold the same state backend variables. |
 | Platform connection | Approve the GitHub App installation and a read credential for workflow/run/artifact verification | App has `contents: write` and `pull_requests: write` only; it does not have `workflows: write`. |
 
+The state backend, the Plan/Apply OIDC roles, and the read role with its External ID Secret can be created by the customer-operated [`customer-onboarding.yaml`](../../infrastructure/cloudformation/customer-onboarding.yaml) stack instead of by hand; its outputs are the Environment variable values in section 2.
+
 The customer owns workload-specific IAM permissions. A generic template cannot know which AWS services their Terraform will manage, so it must not grant `AdministratorAccess` or wildcard write access merely to make a first run easier.
 
 ## 2. Repository starter installation
