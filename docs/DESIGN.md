@@ -18,23 +18,27 @@ Customer policy upload
 → Assessment pins the Profile version → Policy Context
 
 Natural-language request
-→ Parent Router Lambda (Policy Q&A + intent/scope proposal; sync, max 30s)
+→ API Lambda POST /orchestrate → LangGraph Parent (Policy Q&A + intent/scope proposal; sync, max 30s)
 → response or user-confirmed Job creation
 
 Explicit Assessment / Remediation / Deployment request
-→ corresponding API Lambda (JWT/scope validation, Job + WorkflowTask creation)
-→ corresponding SQS Standard Queue + DLQ
+→ API Lambda (single function for all routes; JWT/scope validation, Job + Outbox + WorkflowTask)
+→ corresponding SQS Standard Queue + DLQ (maxReceiveCount 3)
 → corresponding Worker Lambda (plain Python, resumable via DynamoDB checkpoint)
-→ Bedrock role-specific Model Profile + constrained tools
+→ Bedrock role-specific Model Profile + constrained tools (Deployment: no model)
+Outbox Sweeper (EventBridge rate 1 minute) → re-sends undelivered outbox WorkflowTasks
 
-DynamoDB: Job, revision-bound checkpoint, domain metadata
+DynamoDB: Job, revision-bound checkpoint, domain metadata, outbox
 S3: policy originals, IaC/AWS snapshots, reports, patches, plans
 GitHub App: customer Terraform repository
-GitHub Actions: CI / plan / approved apply
-GitHub Actions completion event → EventBridge → Deployment Queue → Deployment Worker
+Deployment Worker → GitHub Actions plan (workflow_dispatch, run polled to completion)
+Human approval → outbox PLAN_COMPLETED → Deployment Worker → GitHub Actions apply dispatch
+GitHub Actions apply completion event → EventBridge → Apply Completion Lambda
+→ Deployment Queue (APPLY_COMPLETED) → Deployment Worker → Post-Deploy Assessment Queue
 ```
 
-Parent Router는 Queue를 소비하거나 장시간 실행을 이어가지 않는다. 역할별 Worker는 Assessment,
+API 진입점(도메인 API와 Parent Router)은 배포 단위로는 Lambda 하나(`ApiRuntimeFunction`)이며
+역할 구분은 코드 경계다. Parent Router는 Queue를 소비하거나 장시간 실행을 이어가지 않는다. 역할별 Worker는 Assessment,
 Remediation, Deployment 중 자기 작업만 실행한다. SQS는 전달 수단이며 상태 정본은 DynamoDB와
 S3이다. 플랫폼은 고객 AWS Account의 `us-east-1`에 배포하며, MVP에서 Backend Lambda와 Worker는
 고객 기존 VPC에 연결하지 않는다.
@@ -42,14 +46,18 @@ S3이다. 플랫폼은 고객 AWS Account의 `us-east-1`에 배포하며, MVP에
 ```text
 Customer AWS Account (platform deployment; existing Workload VPC not connected)
 ├── Edge / Frontend: S3 + CloudFront React SPA, Cognito User Pool
-├── API: API Gateway, Parent Router Lambda, Assessment/Remediation/Deployment API Lambda
+├── API: API Gateway HTTP API (JWT authorizer) → API Lambda (domain API + LangGraph Parent Router)
 ├── Asynchronous Workflow
+│   ├── Policy Authoring SQS + DLQ → Policy Authoring Worker Lambda (dedicated role)
 │   ├── Assessment SQS + DLQ → Assessment Worker Lambda (ASSESSMENT)
 │   ├── Remediation SQS + DLQ → Remediation Worker Lambda (REMEDIATION)
-│   └── Deployment SQS + DLQ → Deployment Worker Lambda (DEPLOYMENT)
+│   ├── Deployment SQS + DLQ → Deployment Worker Lambda (DEPLOYMENT)
+│   └── Outbox Sweeper Lambda (EventBridge schedule)
 ├── AI / Tools: Bedrock role-specific Model Profiles, Policy Context, AWS Resource Tool (RO), GitHub App
-├── State / Artifact / Observability: DynamoDB checkpoint/metadata, S3 artifacts, CloudWatch/CloudTrail
-└── Deployment integration: GitHub Actions OIDC CI/Plan/approved Apply → EventBridge → Deployment Queue
+├── State / Artifact / Observability: DynamoDB checkpoint/metadata, S3 artifacts, CloudWatch,
+│   artifact-access CloudTrail + audit bucket
+└── Deployment integration: GitHub Actions OIDC CI/Plan/approved Apply
+    → EventBridge (apply completed) → Apply Completion Lambda → Deployment Queue
 
 Customer Workload (EC2 / RDS / ALB / S3)
 └── AWS Resource Tool read-only access or approved GitHub Actions Apply only
