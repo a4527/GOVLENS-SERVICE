@@ -40,25 +40,17 @@ Policy / ISMS-P + Customer IaC + AWS Actual
 
 ## 아키텍처 개요
 
-```text
-React SPA (S3 + CloudFront)
-  → Cognito (JWT)
-  → API Gateway
-      ├─ Parent Router Lambda      (LangGraph: 자연어 라우팅 + Policy Q&A, 동기 max 30s)
-      ├─ Assessment API  → SQS → Assessment Worker   (Python, DynamoDB checkpoint)
-      ├─ Remediation API → SQS → Remediation Worker  (Python, DynamoDB checkpoint)
-      └─ Deployment API  → SQS → Deployment Worker    (Python, DynamoDB checkpoint)
+<p align="center">
+  <img src="docs/design/architecture/architecture.svg" alt="Govlens 아키텍처: Edge·API, 비동기 워크플로, AI·상태·Artifact, 배포 연동과 Workload" width="100%">
+</p>
 
-AI / Tools : Bedrock 역할별 Model Profile, Policy Context, AWS Resource Tool(RO), GitHub App
-State      : DynamoDB (Job / checkpoint / metadata)
-Artifact   : S3 (policy 원본 / IaC·AWS snapshot / report / patch / plan)
-Deploy     : GitHub App + GitHub Actions(OIDC) CI / plan / approved apply
-             → EventBridge → Deployment Queue
-```
+> 그림은 `scripts/generate_architecture_diagram.py`로 생성합니다. 배포 구조(`infrastructure/cloudformation/platform-foundation.yaml`)가 바뀌면 함께 갱신하세요.
 
-- **명시적 UI/API 요청**은 해당 Workflow로 직접 진입합니다.
-- **자연어 요청**만 Parent Orchestrator가 의도·후보 Scope를 해석해 적절한 Workflow로 라우팅합니다.
-- 상태의 정본은 DynamoDB와 S3이며, SQS는 전달 수단입니다.
+- **명시적 UI/API 요청**은 해당 Workflow로 직접 진입하고, **자연어 요청**만 `/orchestrate`의 Parent Orchestrator가 의도·후보 Scope를 해석해 Workflow를 제안합니다. Parent는 별도 Lambda가 아니라 API Lambda 안에서 동기로 실행됩니다.
+- API는 Job과 Outbox를 DynamoDB에 저장한 뒤 큐에 최소 `WorkflowTask`만 보냅니다. 상태의 정본은 DynamoDB와 S3이며, SQS는 전달 수단입니다.
+- **고객 정책**은 업로드 → 검증·정규화 → Policy Authoring Worker의 Rule 후보 → 사람 승인을 거친 뒤에만 Policy Profile로 Assessment에 쓰입니다.
+- **승인은 apply를 직접 실행하지 않습니다.** Deployment Worker가 승인 사실을 재검증한 뒤 GitHub Actions apply를 dispatch하고, 완료 Event는 신호일 뿐이라 Worker가 `run_id`로 run을 다시 읽어 대조합니다. Workload에 쓰는 주체는 GitHub Actions뿐입니다.
+- Deployment 단계는 모델을 호출하지 않습니다(Readiness는 결정적 코드, Post-Deploy 검증은 Assessment Profile 재사용).
 
 자세한 내용은 [기술 설계 문서](docs/DESIGN.md)를 참고하세요.
 
